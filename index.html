@@ -569,7 +569,7 @@
 
             // Step 2: send all page images + matterId to Make in one request
             // Make passes them to Gemini which reads the scanned pages and returns structured JSON
-            setProgress(80, 'Sending to Gemini', 'Analysing scanned report…');
+            setProgress(80, 'Please wait', 'Analysing scanned report…');
             const response = await fetch(WEBHOOK_EXTRACT, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
