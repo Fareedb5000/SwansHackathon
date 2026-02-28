@@ -416,37 +416,48 @@
         `;
     }
 
-    // ── APPROVE ────────────────────────────────────────────────────────────────
-    document.getElementById('approveBtn').addEventListener('click', async () => {
-        const fd = new FormData(clioForm);
-        const finalData = Object.fromEntries(fd.entries());
-        finalData.matterId = document.getElementById('matterId').value;
-        finalData.injuriesReported = document.getElementById('injuriesReported')?.checked ?? false;
+   // ── APPROVE (Modified for Testing) ──────────────────────────────────────────
+document.getElementById('approveBtn').addEventListener('click', async () => {
+    const fd = new FormData(clioForm);
+    const finalData = Object.fromEntries(fd.entries());
+    finalData.matterId = document.getElementById('matterId').value;
+    finalData.injuriesReported = document.getElementById('injuriesReported')?.checked ?? false;
 
-        const approveBtn = document.getElementById('approveBtn');
-        approveBtn.disabled = true;
-        approveBtn.textContent = '⏳  Syncing…';
+    const approveBtn = document.getElementById('approveBtn');
+    
+    // Disable temporarily to prevent double-clicks during the actual fetch
+    approveBtn.disabled = true;
+    approveBtn.textContent = '⏳  Syncing…';
 
-        try {
-            const res = await fetch(WEBHOOK_CLIO, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(finalData)
-            });
-            if (res.ok) {
-                approveBtn.textContent = '✓  Synced Successfully';
-                approveBtn.style.borderColor = '#6FD4A1';
-                document.getElementById('review-status').textContent = 'Synced to Clio';
-            } else {
-                throw new Error(`Clio webhook returned ${res.status}`);
-            }
-        } catch (err) {
-            showToast('Sync failed: ' + err.message);
-            approveBtn.disabled = false;
-            approveBtn.textContent = '✓  Approve & Sync to Clio';
+    try {
+        const res = await fetch(WEBHOOK_CLIO, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(finalData)
+        });
+
+        if (res.ok) {
+            approveBtn.textContent = '✓  Synced Successfully';
+            approveBtn.style.borderColor = '#6FD4A1';
+            document.getElementById('review-status').textContent = 'Synced to Clio';
+
+            // Reset the button after 2 seconds so you can click it again
+            setTimeout(() => {
+                approveBtn.disabled = false;
+                approveBtn.textContent = '✓  Approve & Sync to Clio';
+                approveBtn.style.borderColor = ''; // Resets to original CSS border
+            }, 2000);
+
+        } else {
+            throw new Error(`Clio webhook returned ${res.status}`);
         }
-    });
-
+    } catch (err) {
+        showToast('Sync failed: ' + err.message);
+        // Ensure it's re-enabled on error too
+        approveBtn.disabled = false;
+        approveBtn.textContent = '✓  Approve & Sync to Clio';
+    }
+});
     // ── HELPERS ────────────────────────────────────────────────────────────────
     function setLoading(on) {
         loadingState.classList.toggle('active', on);
