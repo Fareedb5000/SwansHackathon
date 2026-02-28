@@ -511,14 +511,10 @@
 
 <script>
     // ── CONFIG ─────────────────────────────────────────────────────────────────
-    // OCR_ENDPOINT points to your Vercel serverless function.
-    // In production this is just '/api/ocr' (same domain).
-    // For local dev, set to your ngrok / vercel dev URL.
-    const OCR_ENDPOINT    = '/api/ocr';
-    const WEBHOOK_EXTRACT = 'https://hook.eu2.make.com/wy1xrk3jeuwyhy6i45qgoo5ggpc6vu2r';   // Make.com: text → structured JSON
-    const WEBHOOK_CLIO    = 'https://hook.eu2.make.com/0o2tli1byq15x3q87lxft526ottncrrj';   // Make.com: push to Clio
+    const WEBHOOK_EXTRACT = 'https://hook.eu2.make.com/wy1xrk3jeuwyhy6i45qgoo5ggpc6vu2r';   // Make.com: receives images → Gemini → structured JSON
+    const WEBHOOK_CLIO    = 'https://hook.eu2.make.com/0o2tli1byq15x3q87lxft526ottncrrj';   // Make.com: push structured data to Clio
 
-    // Render scale: higher = better OCR accuracy, larger payloads. 2.5 is a sweet spot.
+    // Render scale: higher = better quality for Gemini to read. 2.5 is a sweet spot.
     const RENDER_SCALE = 2.5;
 
     pdfjsLib.GlobalWorkerOptions.workerSrc =
@@ -567,18 +563,20 @@
         processBtn.disabled = true;
 
         try {
-            // Step 1: render each PDF page to an image and OCR it via our serverless function
+            // Step 1: render each PDF page to a base64 image
             setProgress(0, 'Reading document', 'Loading PDF…');
-            const fullText = await ocrPdf(currentFile);
+            const pages = await renderPdfToImages(currentFile);
 
-            // Step 2: send raw text to Make.com for Claude/GPT to structure it
-            setProgress(90, 'Extracting case details', 'Sending to extraction pipeline…');
+            // Step 2: send all page images + matterId to Make in one request
+            // Make passes them to Gemini which reads the scanned pages and returns structured JSON
+            setProgress(80, 'Sending to Gemini', 'Analysing scanned report…');
             const response = await fetch(WEBHOOK_EXTRACT, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ matterId, pdfText: fullText })
+                body: JSON.stringify({ matterId, pages })
+                // pages = [{ pageNumber: 1, imageBase64: '...' }, { pageNumber: 2, ... }]
             });
-            if (!response.ok) throw new Error(`Extraction webhook failed (${response.status})`);
+            if (!response.ok) throw new Error(`Webhook failed (${response.status})`);
             const data = await response.json();
 
             setProgress(100, 'Complete', 'Building review form…');
@@ -597,20 +595,18 @@
         }
     });
 
-    // ── OCR PIPELINE ───────────────────────────────────────────────────────────
-    /**
-     * Renders each page of the PDF to a PNG via canvas, sends each page to
-     * /api/ocr (our Vercel serverless function), and concatenates the results.
-     */
-    async function ocrPdf(file) {
+    // ── PDF → IMAGES ───────────────────────────────────────────────────────────
+    // Renders every page of the PDF to a base64 PNG and returns them as an array.
+    // Make receives this array and passes each image to Gemini in its prompt.
+    async function renderPdfToImages(file) {
         const arrayBuffer = await file.arrayBuffer();
         const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
         const numPages = pdf.numPages;
-        let fullText = '';
+        const pages = [];
 
         for (let i = 1; i <= numPages; i++) {
-            const pageProgress = Math.round(((i - 1) / numPages) * 80); // 0–80% for OCR phase
-            setProgress(pageProgress, 'Running OCR', `Processing page ${i} of ${numPages}…`);
+            const pct = Math.round(((i - 1) / numPages) * 75);
+            setProgress(pct, 'Preparing pages', `Rendering page ${i} of ${numPages}…`);
 
             const page = await pdf.getPage(i);
             const viewport = page.getViewport({ scale: RENDER_SCALE });
@@ -620,27 +616,12 @@
 
             await page.render({ canvasContext: ctx, viewport }).promise;
 
-            // Convert canvas to base64 PNG
-            const dataUrl = canvas.toDataURL('image/png');
-            const base64  = dataUrl.split(',')[1]; // strip "data:image/png;base64,"
-
-            // Call our secure serverless proxy
-            const res = await fetch(OCR_ENDPOINT, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ imageBase64: base64, mimeType: 'image/png' })
-            });
-
-            if (!res.ok) {
-                const err = await res.json().catch(() => ({}));
-                throw new Error(err.error || `OCR failed on page ${i} (HTTP ${res.status})`);
-            }
-
-            const { text } = await res.json();
-            fullText += text + '\n\n--- Page Break ---\n\n';
+            const dataUrl   = canvas.toDataURL('image/png');
+            const base64    = dataUrl.split(',')[1];
+            pages.push({ pageNumber: i, imageBase64: base64 });
         }
 
-        return fullText.trim();
+        return pages;
     }
 
     // ── FORM BUILDER ───────────────────────────────────────────────────────────
