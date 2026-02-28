@@ -509,31 +509,32 @@
 <!-- Toast notification -->
 <div class="toast" id="toast"></div>
 
+
 <script>
     // ── CONFIG ─────────────────────────────────────────────────────────────────
-    const WEBHOOK_EXTRACT = 'https://hook.eu2.make.com/wy1xrk3jeuwyhy6i45qgoo5ggpc6vu2r';   // Make.com: receives images → Gemini → structured JSON
-    const WEBHOOK_CLIO    = 'https://hook.eu2.make.com/0o2tli1byq15x3q87lxft526ottncrrj';   // Make.com: push structured data to Clio
+    const WEBHOOK_EXTRACT = 'https://hook.eu2.make.com/wy1xrk3jeuwyhy6i45qgoo5ggpc6vu2r';
+    const WEBHOOK_CLIO    = 'https://hook.eu2.make.com/0o2tli1byq15x3q87lxft526ottncrrj';
 
-    // Render scale: higher = better quality for Gemini to read. 2.5 is a sweet spot.
+    // (Note: RENDER_SCALE is no longer needed for PDF processing, but I've left it as requested)
     const RENDER_SCALE = 2.5;
 
     pdfjsLib.GlobalWorkerOptions.workerSrc =
         'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
     // ── ELEMENTS ───────────────────────────────────────────────────────────────
-    const dropzone     = document.getElementById('dropzone');
-    const fileInput    = document.getElementById('fileInput');
-    const processBtn   = document.getElementById('processBtn');
-    const loadingState = document.getElementById('loading-state');
-    const uploadUI     = document.getElementById('upload-ui');
-    const dzFilename   = document.getElementById('dz-filename');
-    const reviewPanel  = document.getElementById('review-panel');
-    const clioForm     = document.getElementById('clioForm');
-    const progressBar  = document.getElementById('progress-bar');
-    const progressText = document.getElementById('progress-text');
+    const dropzone      = document.getElementById('dropzone');
+    const fileInput     = document.getElementById('fileInput');
+    const processBtn    = document.getElementById('processBtn');
+    const loadingState  = document.getElementById('loading-state');
+    const uploadUI      = document.getElementById('upload-ui');
+    const dzFilename    = document.getElementById('dz-filename');
+    const reviewPanel   = document.getElementById('review-panel');
+    const clioForm      = document.getElementById('clioForm');
+    const progressBar   = document.getElementById('progress-bar');
+    const progressText  = document.getElementById('progress-text');
     const progressDetail = document.getElementById('progress-detail');
-    const canvas       = document.getElementById('renderCanvas');
-    const ctx          = canvas.getContext('2d');
+    const canvas        = document.getElementById('renderCanvas');
+    const ctx           = canvas.getContext('2d');
 
     let currentFile = null;
 
@@ -548,7 +549,7 @@
     function handleFile(file) {
         if (file?.type === 'application/pdf') {
             currentFile = file;
-            dzFilename.textContent = '⬡  ' + file.name;
+            dzFilename.textContent = '⬡  ' + file.name;
             dzFilename.style.display = 'block';
             uploadUI.querySelector('.dz-title').textContent = 'Report loaded';
         }
@@ -563,19 +564,23 @@
         processBtn.disabled = true;
 
         try {
-            // Step 1: render each PDF page to a base64 image
-            setProgress(0, 'Reading document', 'Loading PDF…');
-            const pages = await renderPdfToImages(currentFile);
+            // Step 1: Convert the whole PDF to a Base64 string directly
+            setProgress(30, 'Reading document', 'Converting PDF to data stream…');
+            const pdfBase64 = await convertFileToBase64(currentFile);
 
-            // Step 2: send all page images + matterId to Make in one request
-            // Make passes them to Gemini which reads the scanned pages and returns structured JSON
-            setProgress(80, 'Please wait', 'Analysing scanned report…');
+            // Step 2: Send the PDF data + matterId to Make
+            // Make will now receive a single "pdfBase64" string instead of an array of images
+            setProgress(70, 'Please wait', 'Analysing document on server…');
             const response = await fetch(WEBHOOK_EXTRACT, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ matterId, pages })
-                // pages = [{ pageNumber: 1, imageBase64: '...' }, { pageNumber: 2, ... }]
+                body: JSON.stringify({ 
+                    matterId, 
+                    pdfBase64, 
+                    fileName: currentFile.name 
+                })
             });
+
             if (!response.ok) throw new Error(`Webhook failed (${response.status})`);
             const data = await response.json();
 
@@ -595,41 +600,19 @@
         }
     });
 
-    // ── PDF → IMAGES ───────────────────────────────────────────────────────────
-    // Renders every page of the PDF to a base64 PNG and returns them as an array.
-    // Make receives this array and passes each image to Gemini in its prompt.
-  async function renderPdfToImages(file) {
-    const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
-    const numPages = pdf.numPages;
-    
-    // 1. Lower the scale. 1.5 is usually plenty for Gemini OCR.
-    const OPTIMIZED_SCALE = 1.5; 
-
-    // 2. Create an array of page numbers to process
-    const pageNumbers = Array.from({ length: numPages }, (_, i) => i + 1);
-
-    const pages = await Promise.all(pageNumbers.map(async (num) => {
-        const page = await pdf.getPage(num);
-        const viewport = page.getViewport({ scale: OPTIMIZED_SCALE });
-
-        // We need a separate canvas per page for concurrent rendering
-        const offscreenCanvas = document.createElement('canvas');
-        const offCtx = offscreenCanvas.getContext('2d');
-        offscreenCanvas.width = viewport.width;
-        offscreenCanvas.height = viewport.height;
-
-        await page.render({ canvasContext: offCtx, viewport }).promise;
-
-        // 3. SWITCH TO JPEG. '0.7' quality is the sweet spot for AI readability vs size.
-        const dataUrl = offscreenCanvas.toDataURL('image/jpeg', 0.7);
-        const base64 = dataUrl.split(',')[1];
-        
-        return { pageNumber: num, imageBase64: base64 };
-    }));
-
-    return pages;
-}
+    // ── NEW PDF CONVERTER (Replaces renderPdfToImages) ──────────────────────────
+    function convertFileToBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                // We just need the actual base64 string, not the "data:application/pdf;base64," prefix
+                const base64 = reader.result.split(',')[1];
+                resolve(base64);
+            };
+            reader.onerror = error => reject(error);
+            reader.readAsDataURL(file);
+        });
+    }
 
     // ── FORM BUILDER ───────────────────────────────────────────────────────────
     const FIELDS = [
@@ -675,7 +658,7 @@
 
         const approveBtn = document.getElementById('approveBtn');
         approveBtn.disabled = true;
-        approveBtn.textContent = '⏳  Syncing…';
+        approveBtn.textContent = '⏳  Syncing…';
 
         try {
             const res = await fetch(WEBHOOK_CLIO, {
@@ -684,7 +667,7 @@
                 body: JSON.stringify(finalData)
             });
             if (res.ok) {
-                approveBtn.textContent = '✓  Synced Successfully';
+                approveBtn.textContent = '✓  Synced Successfully';
                 approveBtn.style.borderColor = '#6FD4A1';
                 document.getElementById('review-status').textContent = 'Synced to Clio';
             } else {
@@ -693,7 +676,7 @@
         } catch (err) {
             showToast('Sync failed: ' + err.message);
             approveBtn.disabled = false;
-            approveBtn.textContent = '✓  Approve & Sync to Clio';
+            approveBtn.textContent = '✓  Approve & Sync to Clio';
         }
     });
 
