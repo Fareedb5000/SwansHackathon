@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Richards & Law — Case Intake</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400;500&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --gold: #B8974A;
+            --gold-light: #D4AF6A;
+            --gold-dim: rgba(184,151,74,0.15);
+            --ink: #0D0D0D;
+            --paper: #F7F3EC;
+            --paper-dark: #EDE7DB;
+            --slate: #2A2A2A;
+            --mist: #8A8278;
+            --red: #8B2020;
+            --green: #1A5C3A;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'DM Mono', monospace;
+            background: var(--ink);
+            color: var(--paper);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 15% 10%, rgba(184,151,74,0.07) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 80% at 85% 90%, rgba(184,151,74,0.05) 0%, transparent 60%),
+                repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,0.015) 40px),
+                repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(255,255,255,0.015) 40px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .app {
+            position: relative;
+            z-index: 1;
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 48px 24px 96px;
+        }
+
+        /* ── HEADER ── */
+        .header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-bottom: 56px;
+            border-bottom: 1px solid rgba(184,151,74,0.3);
+            margin-bottom: 56px;
+            animation: fadeDown 0.8s ease both;
+        }
+
+        .header-rule {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            width: 100%;
+            max-width: 480px;
+            margin-bottom: 20px;
+        }
+        .header-rule::before, .header-rule::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(to right, transparent, var(--gold));
+        }
+        .header-rule::after { background: linear-gradient(to left, transparent, var(--gold)); }
+        .header-rule span {
+            color: var(--gold);
+            font-size: 10px;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(36px, 6vw, 58px);
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            line-height: 1;
+            text-align: center;
+        }
+        h1 em {
+            font-style: italic;
+            color: var(--gold);
+            font-weight: 400;
+        }
+        .tagline {
+            margin-top: 12px;
+            font-size: 10px;
+            letter-spacing: 0.35em;
+            text-transform: uppercase;
+            color: var(--mist);
+        }
+
+        /* ── CARDS ── */
+        .card {
+            background: rgba(255,255,255,0.025);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 2px;
+            padding: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 3px; height: 100%;
+            background: linear-gradient(to bottom, var(--gold), transparent);
+        }
+
+        .section-label {
+            font-size: 9px;
+            letter-spacing: 0.4em;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 28px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(184,151,74,0.2);
+        }
+
+        /* ── MATTER INPUT ── */
+        .matter-wrap { margin-bottom: 32px; animation: fadeUp 0.7s 0.1s ease both; }
+        .field-label {
+            display: block;
+            font-size: 9px;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--mist);
+            margin-bottom: 10px;
+        }
+        .matter-input {
+            width: 100%;
+            background: rgba(255,255,255,0.04);
+            border: none;
+            border-bottom: 1px solid rgba(184,151,74,0.4);
+            color: var(--paper);
+            font-family: 'DM Mono', monospace;
+            font-size: 28px;
+            font-weight: 300;
+            padding: 8px 0;
+            outline: none;
+            transition: border-color 0.3s;
+            letter-spacing: 0.05em;
+        }
+        .matter-input::placeholder { color: rgba(255,255,255,0.15); }
+        .matter-input:focus { border-bottom-color: var(--gold); }
+
+        /* ── DROP ZONE ── */
+        .dropzone {
+            border: 1px dashed rgba(184,151,74,0.35);
+            border-radius: 2px;
+            padding: 52px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            position: relative;
+            animation: fadeUp 0.7s 0.2s ease both;
+        }
+        .dropzone:hover, .dropzone.dragover {
+            border-color: var(--gold);
+            background: var(--gold-dim);
+        }
+        .dropzone input { display: none; }
+
+        .dz-icon { width: 48px; height: 48px; margin: 0 auto 16px; opacity: 0.5; }
+        .dz-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 20px;
+            font-weight: 300;
+            letter-spacing: 0.05em;
+            color: var(--paper);
+            margin-bottom: 6px;
+        }
+        .dz-sub {
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            color: var(--mist);
+            text-transform: uppercase;
+        }
+        .dz-sub span { color: var(--gold); cursor: pointer; }
+        .dz-filename {
+            display: none;
+            font-size: 11px;
+            color: var(--gold-light);
+            letter-spacing: 0.1em;
+            margin-top: 10px;
+        }
+
+        /* ── PROGRESS ── */
+        .loading-state {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            padding: 40px 0;
+        }
+        .loading-state.active { display: flex; }
+
+        .progress-wrap {
+            width: 100%;
+            max-width: 320px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 1px;
+            height: 2px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background: var(--gold);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 1px;
+        }
+        .progress-text {
+            font-size: 10px;
+            letter-spacing: 0.4em;
+            text-transform: uppercase;
+            color: var(--gold);
+        }
+        .progress-detail {
+            font-size: 9px;
+            letter-spacing: 0.2em;
+            color: var(--mist);
+        }
+
+        /* ── PROCESS BUTTON ── */
+        .process-btn {
+            width: 100%;
+            margin-top: 28px;
+            background: transparent;
+            border: 1px solid rgba(184,151,74,0.5);
+            color: var(--gold);
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 0.4em;
+            text-transform: uppercase;
+            padding: 18px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            position: relative;
+            overflow: hidden;
+            animation: fadeUp 0.7s 0.3s ease both;
+        }
+        .process-btn::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(184,151,74,0.15), transparent);
+            transition: left 0.5s ease;
+        }
+        .process-btn:hover { border-color: var(--gold); background: var(--gold-dim); }
+        .process-btn:hover::before { left: 100%; }
+        .process-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+        /* ── REVIEW PANEL ── */
+        .review-panel { display: none; margin-top: 48px; animation: fadeUp 0.6s ease both; }
+        .review-panel.visible { display: block; }
+
+        .review-header {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            margin-bottom: 36px;
+        }
+        .review-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 28px;
+            font-weight: 700;
+        }
+        .review-status {
+            font-size: 9px;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--gold);
+            background: var(--gold-dim);
+            border: 1px solid rgba(184,151,74,0.3);
+            padding: 4px 12px;
+            border-radius: 2px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px 32px;
+        }
+        @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+
+        .form-field { position: relative; }
+        .form-field.full { grid-column: 1 / -1; }
+
+        .form-field label {
+            display: block;
+            font-size: 8px;
+            letter-spacing: 0.35em;
+            text-transform: uppercase;
+            color: var(--mist);
+            margin-bottom: 6px;
+        }
+        .form-field input[type="text"] {
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            color: var(--paper);
+            font-family: 'DM Mono', monospace;
+            font-size: 13px;
+            font-weight: 300;
+            padding: 6px 0;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .form-field input[type="text"]:focus { border-bottom-color: var(--gold); }
+
+        /* ── TOGGLE ── */
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-top: 8px;
+            padding: 16px 20px;
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 2px;
+            background: rgba(255,255,255,0.02);
+        }
+        .toggle-label { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--paper); }
+        .toggle-row input[type="checkbox"] { display: none; }
+        .toggle-box {
+            width: 18px; height: 18px;
+            border: 1px solid rgba(184,151,74,0.5);
+            border-radius: 1px;
+            cursor: pointer;
+            flex-shrink: 0;
+            position: relative;
+            transition: background 0.2s;
+        }
+        .toggle-row input:checked + .toggle-box { background: var(--gold); border-color: var(--gold); }
+        .toggle-box::after {
+            content: '';
+            position: absolute;
+            top: 2px; left: 5px;
+            width: 5px; height: 9px;
+            border: 2px solid var(--ink);
+            border-top: none;
+            border-left: none;
+            transform: rotate(45deg) scale(0);
+            transition: transform 0.15s ease;
+        }
+        .toggle-row input:checked + .toggle-box::after { transform: rotate(45deg) scale(1); }
+
+        /* ── APPROVE ── */
+        .approve-btn {
+            width: 100%;
+            margin-top: 36px;
+            background: rgba(26,92,58,0.2);
+            border: 1px solid rgba(26,92,58,0.6);
+            color: #6FD4A1;
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 0.4em;
+            text-transform: uppercase;
+            padding: 18px;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+        .approve-btn:hover { background: rgba(26,92,58,0.4); border-color: #6FD4A1; }
+
+        /* ── ERROR TOAST ── */
+        .toast {
+            position: fixed;
+            bottom: 32px; left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: #3D1212;
+            border: 1px solid #8B2020;
+            color: #F4A0A0;
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            padding: 14px 24px;
+            border-radius: 2px;
+            transition: transform 0.35s ease;
+            z-index: 999;
+            white-space: nowrap;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+
+        /* ── DIVIDER ── */
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 32px 0;
+            color: var(--mist);
+            font-size: 9px;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+        }
+        .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.07); }
+
+        /* ── ANIMATIONS ── */
+        @keyframes fadeDown { from { opacity:0; transform: translateY(-20px); } to { opacity:1; transform: none; } }
+        @keyframes fadeUp   { from { opacity:0; transform: translateY(24px);  } to { opacity:1; transform: none; } }
+        @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-5px)} 80%{transform:translateX(5px)} }
+
+        .footer {
+            text-align: center;
+            margin-top: 72px;
+            padding-top: 32px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            font-size: 9px;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.2);
+        }
+
+        /* Hidden canvas for PDF rendering */
+        #renderCanvas { display: none; }
+    </style>
+</head>
+<body>
+<canvas id="renderCanvas"></canvas>
+
+<div class="app">
+
+    <header class="header">
+        <div class="header-rule"><span>Est. 2019</span></div>
+        <h1>Richards <em>&</em> Law</h1>
+        <p class="tagline">Internal Case Intake &nbsp;·&nbsp; Confidential</p>
+    </header>
+
+    <div class="card">
+        <div class="section-label">Step 01 &nbsp;—&nbsp; Identify Matter</div>
+
+        <div class="matter-wrap">
+            <label class="field-label" for="matterId">Clio Matter ID</label>
+            <input type="text" id="matterId" class="matter-input" placeholder="e.g. 123456789" autocomplete="off">
+        </div>
+
+        <div class="divider">Step 02 &nbsp;—&nbsp; Upload Scanned Report</div>
+
+        <div class="dropzone" id="dropzone">
+            <div id="upload-ui">
+                <svg class="dz-icon" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 48 48">
+                    <rect x="8" y="4" width="28" height="38" rx="2" ry="2" stroke-linejoin="round"/>
+                    <polyline points="28,4 28,16 40,16" stroke-linejoin="round"/>
+                    <path d="M40 16 L36 4" stroke-linejoin="round"/>
+                    <line x1="16" y1="26" x2="32" y2="26"/>
+                    <line x1="16" y1="32" x2="28" y2="32"/>
+                </svg>
+                <p class="dz-title">Drop scanned police report here</p>
+                <p class="dz-sub">PDF only &nbsp;·&nbsp; or <span id="browseBtn">click to browse</span></p>
+                <input type="file" id="fileInput" accept="application/pdf">
+            </div>
+            <p class="dz-filename" id="dz-filename"></p>
+        </div>
+
+        <!-- PROGRESS STATE (replaces old spinner) -->
+        <div class="loading-state" id="loading-state">
+            <p class="progress-text" id="progress-text">Preparing document</p>
+            <div class="progress-wrap">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            <p class="progress-detail" id="progress-detail">Initialising...</p>
+        </div>
+
+        <button class="process-btn" id="processBtn">▶ &nbsp; Process Report</button>
+    </div>
+
+    <div class="review-panel" id="review-panel">
+        <div class="card">
+            <div class="review-header">
+                <h2 class="review-title">Verify Extracted Data</h2>
+                <span class="review-status" id="review-status">Awaiting Approval</span>
+            </div>
+
+            <div class="section-label">Client Information</div>
+            <form id="clioForm" class="form-grid"></form>
+
+            <button class="approve-btn" id="approveBtn">✓ &nbsp; Approve &amp; Sync to Clio</button>
+        </div>
+    </div>
+
+    <footer class="footer">Richards &amp; Law LLP &nbsp;·&nbsp; Internal Use Only &nbsp;·&nbsp; All Data Encrypted in Transit</footer>
+</div>
+
+<!-- Toast notification -->
+<div class="toast" id="toast"></div>
+
+<script>
+    // ── CONFIG ─────────────────────────────────────────────────────────────────
+    // OCR_ENDPOINT points to your Vercel serverless function.
+    // In production this is just '/api/ocr' (same domain).
+    // For local dev, set to your ngrok / vercel dev URL.
+    const OCR_ENDPOINT    = '/api/ocr';
+    const WEBHOOK_EXTRACT = 'https://hook.eu2.make.com/wy1xrk3jeuwyhy6i45qgoo5ggpc6vu2r';   // Make.com: text → structured JSON
+    const WEBHOOK_CLIO    = 'https://hook.eu2.make.com/0o2tli1byq15x3q87lxft526ottncrrj';   // Make.com: push to Clio
+
+    // Render scale: higher = better OCR accuracy, larger payloads. 2.5 is a sweet spot.
+    const RENDER_SCALE = 2.5;
+
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    // ── ELEMENTS ───────────────────────────────────────────────────────────────
+    const dropzone     = document.getElementById('dropzone');
+    const fileInput    = document.getElementById('fileInput');
+    const processBtn   = document.getElementById('processBtn');
+    const loadingState = document.getElementById('loading-state');
+    const uploadUI     = document.getElementById('upload-ui');
+    const dzFilename   = document.getElementById('dz-filename');
+    const reviewPanel  = document.getElementById('review-panel');
+    const clioForm     = document.getElementById('clioForm');
+    const progressBar  = document.getElementById('progress-bar');
+    const progressText = document.getElementById('progress-text');
+    const progressDetail = document.getElementById('progress-detail');
+    const canvas       = document.getElementById('renderCanvas');
+    const ctx          = canvas.getContext('2d');
+
+    let currentFile = null;
+
+    // ── DRAG & DROP ────────────────────────────────────────────────────────────
+    document.getElementById('browseBtn').addEventListener('click', (e) => { e.stopPropagation(); fileInput.click(); });
+    dropzone.addEventListener('click', () => fileInput.click());
+    dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('dragover'); });
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+    dropzone.addEventListener('drop', (e) => { e.preventDefault(); dropzone.classList.remove('dragover'); handleFile(e.dataTransfer.files[0]); });
+    fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+
+    function handleFile(file) {
+        if (file?.type === 'application/pdf') {
+            currentFile = file;
+            dzFilename.textContent = '⬡  ' + file.name;
+            dzFilename.style.display = 'block';
+            uploadUI.querySelector('.dz-title').textContent = 'Report loaded';
+        }
+    }
+
+    // ── PROCESS ────────────────────────────────────────────────────────────────
+    processBtn.addEventListener('click', async () => {
+        const matterId = document.getElementById('matterId').value.trim();
+        if (!matterId || !currentFile) { shake(processBtn); return; }
+
+        setLoading(true);
+        processBtn.disabled = true;
+
+        try {
+            // Step 1: render each PDF page to an image and OCR it via our serverless function
+            setProgress(0, 'Reading document', 'Loading PDF…');
+            const fullText = await ocrPdf(currentFile);
+
+            // Step 2: send raw text to Make.com for Claude/GPT to structure it
+            setProgress(90, 'Extracting case details', 'Sending to extraction pipeline…');
+            const response = await fetch(WEBHOOK_EXTRACT, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ matterId, pdfText: fullText })
+            });
+            if (!response.ok) throw new Error(`Extraction webhook failed (${response.status})`);
+            const data = await response.json();
+
+            setProgress(100, 'Complete', 'Building review form…');
+            await sleep(400);
+
+            buildReviewForm(data);
+            reviewPanel.classList.add('visible');
+            reviewPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        } catch (err) {
+            showToast('Error: ' + err.message);
+            console.error(err);
+        } finally {
+            setLoading(false);
+            processBtn.disabled = false;
+        }
+    });
+
+    // ── OCR PIPELINE ───────────────────────────────────────────────────────────
+    /**
+     * Renders each page of the PDF to a PNG via canvas, sends each page to
+     * /api/ocr (our Vercel serverless function), and concatenates the results.
+     */
+    async function ocrPdf(file) {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+        const numPages = pdf.numPages;
+        let fullText = '';
+
+        for (let i = 1; i <= numPages; i++) {
+            const pageProgress = Math.round(((i - 1) / numPages) * 80); // 0–80% for OCR phase
+            setProgress(pageProgress, 'Running OCR', `Processing page ${i} of ${numPages}…`);
+
+            const page = await pdf.getPage(i);
+            const viewport = page.getViewport({ scale: RENDER_SCALE });
+
+            canvas.width  = viewport.width;
+            canvas.height = viewport.height;
+
+            await page.render({ canvasContext: ctx, viewport }).promise;
+
+            // Convert canvas to base64 PNG
+            const dataUrl = canvas.toDataURL('image/png');
+            const base64  = dataUrl.split(',')[1]; // strip "data:image/png;base64,"
+
+            // Call our secure serverless proxy
+            const res = await fetch(OCR_ENDPOINT, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ imageBase64: base64, mimeType: 'image/png' })
+            });
+
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.error || `OCR failed on page ${i} (HTTP ${res.status})`);
+            }
+
+            const { text } = await res.json();
+            fullText += text + '\n\n--- Page Break ---\n\n';
+        }
+
+        return fullText.trim();
+    }
+
+    // ── FORM BUILDER ───────────────────────────────────────────────────────────
+    const FIELDS = [
+        { key: 'ClientFirstName',          label: 'Client First Name' },
+        { key: 'ClientLastName',           label: 'Client Last Name' },
+        { key: 'AccidentDate',             label: 'Accident Date' },
+        { key: 'AccidentLocation',         label: 'Accident Location' },
+        { key: 'AccidentDescription',      label: 'Accident Description',        full: true },
+        { key: 'ClientInjuries',           label: 'Client Injuries',              full: true },
+        { key: 'ClientVehiclePlate',       label: 'Client Vehicle Plate' },
+        { key: 'ClientPronoun',            label: 'Client Pronoun' },
+        { key: 'OtherPartyName',           label: 'Other Party Name' },
+        { key: 'OtherPartyInsurance',      label: 'Other Party Insurance' },
+        { key: 'OtherPartyVehicle',        label: 'Other Party Vehicle' },
+        { key: 'PoliceReportNumber',       label: 'Police Report Number' },
+        { key: 'RespondingOfficer',        label: 'Responding Officer' },
+        { key: 'StatuteofLimitationsDate', label: 'Statute of Limitations' },
+    ];
+
+    function buildReviewForm(data) {
+        clioForm.innerHTML = FIELDS.map(f => `
+            <div class="form-field ${f.full ? 'full' : ''}">
+                <label>${f.label}</label>
+                <input type="text" name="${f.key}" value="${escHtml(data[f.key] || '')}">
+            </div>
+        `).join('') + `
+            <div class="form-field full">
+                <div class="toggle-row">
+                    <input type="checkbox" id="injuriesReported" name="injuriesReported">
+                    <label class="toggle-box" for="injuriesReported"></label>
+                    <span class="toggle-label">Injuries Reported in this case</span>
+                </div>
+            </div>
+        `;
+    }
+
+    // ── APPROVE ────────────────────────────────────────────────────────────────
+    document.getElementById('approveBtn').addEventListener('click', async () => {
+        const fd = new FormData(clioForm);
+        const finalData = Object.fromEntries(fd.entries());
+        finalData.matterId = document.getElementById('matterId').value;
+        finalData.injuriesReported = document.getElementById('injuriesReported')?.checked ?? false;
+
+        const approveBtn = document.getElementById('approveBtn');
+        approveBtn.disabled = true;
+        approveBtn.textContent = '⏳  Syncing…';
+
+        try {
+            const res = await fetch(WEBHOOK_CLIO, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(finalData)
+            });
+            if (res.ok) {
+                approveBtn.textContent = '✓  Synced Successfully';
+                approveBtn.style.borderColor = '#6FD4A1';
+                document.getElementById('review-status').textContent = 'Synced to Clio';
+            } else {
+                throw new Error(`Clio webhook returned ${res.status}`);
+            }
+        } catch (err) {
+            showToast('Sync failed: ' + err.message);
+            approveBtn.disabled = false;
+            approveBtn.textContent = '✓  Approve & Sync to Clio';
+        }
+    });
+
+    // ── HELPERS ────────────────────────────────────────────────────────────────
+    function setLoading(on) {
+        loadingState.classList.toggle('active', on);
+        uploadUI.style.display    = on ? 'none' : 'block';
+        dzFilename.style.display  = on ? 'none' : (currentFile ? 'block' : 'none');
+    }
+
+    function setProgress(pct, label, detail) {
+        progressBar.style.width   = pct + '%';
+        progressText.textContent  = label;
+        progressDetail.textContent = detail;
+    }
+
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    function escHtml(s) {
+        return String(s)
+            .replace(/&/g,'&amp;').replace(/"/g,'&quot;')
+            .replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function shake(el) {
+        el.style.animation = 'none';
+        el.offsetHeight;
+        el.style.animation = 'shake 0.4s ease';
+    }
+
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 4000);
+    }
+</script>
+</body>
+</html>
