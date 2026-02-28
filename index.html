@@ -598,31 +598,38 @@
     // ── PDF → IMAGES ───────────────────────────────────────────────────────────
     // Renders every page of the PDF to a base64 PNG and returns them as an array.
     // Make receives this array and passes each image to Gemini in its prompt.
-    async function renderPdfToImages(file) {
-        const arrayBuffer = await file.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
-        const numPages = pdf.numPages;
-        const pages = [];
+  async function renderPdfToImages(file) {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+    const numPages = pdf.numPages;
+    
+    // 1. Lower the scale. 1.5 is usually plenty for Gemini OCR.
+    const OPTIMIZED_SCALE = 1.5; 
 
-        for (let i = 1; i <= numPages; i++) {
-            const pct = Math.round(((i - 1) / numPages) * 75);
-            setProgress(pct, 'Preparing pages', `Rendering page ${i} of ${numPages}…`);
+    // 2. Create an array of page numbers to process
+    const pageNumbers = Array.from({ length: numPages }, (_, i) => i + 1);
 
-            const page = await pdf.getPage(i);
-            const viewport = page.getViewport({ scale: RENDER_SCALE });
+    const pages = await Promise.all(pageNumbers.map(async (num) => {
+        const page = await pdf.getPage(num);
+        const viewport = page.getViewport({ scale: OPTIMIZED_SCALE });
 
-            canvas.width  = viewport.width;
-            canvas.height = viewport.height;
+        // We need a separate canvas per page for concurrent rendering
+        const offscreenCanvas = document.createElement('canvas');
+        const offCtx = offscreenCanvas.getContext('2d');
+        offscreenCanvas.width = viewport.width;
+        offscreenCanvas.height = viewport.height;
 
-            await page.render({ canvasContext: ctx, viewport }).promise;
+        await page.render({ canvasContext: offCtx, viewport }).promise;
 
-            const dataUrl   = canvas.toDataURL('image/png');
-            const base64    = dataUrl.split(',')[1];
-            pages.push({ pageNumber: i, imageBase64: base64 });
-        }
+        // 3. SWITCH TO JPEG. '0.7' quality is the sweet spot for AI readability vs size.
+        const dataUrl = offscreenCanvas.toDataURL('image/jpeg', 0.7);
+        const base64 = dataUrl.split(',')[1];
+        
+        return { pageNumber: num, imageBase64: base64 };
+    }));
 
-        return pages;
-    }
+    return pages;
+}
 
     // ── FORM BUILDER ───────────────────────────────────────────────────────────
     const FIELDS = [
