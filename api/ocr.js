@@ -2,74 +2,94 @@
  * Vercel Serverless Function: /api/ocr
  *
  * Receives a base64-encoded image (one PDF page) from the browser,
- * forwards it to Google Cloud Vision's DOCUMENT_TEXT_DETECTION endpoint,
+ * forwards it to Azure Computer Vision's Read API (best for scanned docs),
  * and returns the extracted text.
  *
- * Environment variable required (set in Vercel dashboard):
- *   GOOGLE_CLOUD_VISION_API_KEY  — your GCV API key (never sent to the browser)
+ * Environment variables required (set in Vercel dashboard):
+ *   AZURE_VISION_KEY       — your Azure Computer Vision Key 1
+ *   AZURE_VISION_ENDPOINT  — e.g. https://richards-law-ocr.cognitiveservices.azure.com
  */
 
 export default async function handler(req, res) {
-  // ── CORS headers so your HTML page can call this endpoint ──────────────────
-  res.setHeader('Access-Control-Allow-Origin', '*');       // tighten to your domain in production
+  // ── CORS ───────────────────────────────────────────────────────────────────
+  res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  // Pre-flight
   if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  // Only accept POST
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+  const { imageBase64 } = req.body;
+  if (!imageBase64) return res.status(400).json({ error: 'Missing imageBase64 in request body' });
 
-  const { imageBase64, mimeType = 'image/png' } = req.body;
+  const key      = process.env.AZURE_VISION_KEY;
+  const endpoint = process.env.AZURE_VISION_ENDPOINT?.replace(/\/$/, ''); // strip trailing slash
 
-  if (!imageBase64) {
-    return res.status(400).json({ error: 'Missing imageBase64 in request body' });
-  }
-
-  const apiKey = process.env.GOOGLE_CLOUD_VISION_API_KEY;
-  if (!apiKey) {
-    console.error('GOOGLE_CLOUD_VISION_API_KEY is not set');
-    return res.status(500).json({ error: 'Server misconfiguration: API key missing' });
+  if (!key || !endpoint) {
+    console.error('Azure env vars missing');
+    return res.status(500).json({ error: 'Server misconfiguration: Azure credentials missing' });
   }
 
   try {
-    const visionRes = await fetch(
-      `https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`,
+    // Convert base64 → binary buffer to POST as raw image bytes
+    const imageBuffer = Buffer.from(imageBase64, 'base64');
+
+    // ── Step 1: Submit image to the Read API (async operation) ───────────────
+    const submitRes = await fetch(
+      `${endpoint}/vision/v3.2/read/analyze`,
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          requests: [
-            {
-              image: {
-                content: imageBase64   // raw base64, no data-URI prefix
-              },
-              features: [
-                {
-                  type: 'DOCUMENT_TEXT_DETECTION',  // best for scanned docs / dense text
-                  maxResults: 1
-                }
-              ]
-            }
-          ]
-        })
+        headers: {
+          'Ocp-Apim-Subscription-Key': key,
+          'Content-Type': 'image/png',
+        },
+        body: imageBuffer,
       }
     );
 
-    if (!visionRes.ok) {
-      const errBody = await visionRes.text();
-      console.error('Vision API error:', errBody);
-      return res.status(502).json({ error: 'Vision API request failed', detail: errBody });
+    if (!submitRes.ok) {
+      const errBody = await submitRes.text();
+      console.error('Azure submit error:', errBody);
+      return res.status(502).json({ error: 'Azure OCR submission failed', detail: errBody });
     }
 
-    const visionData = await visionRes.json();
+    // Azure returns the polling URL in the Operation-Location header
+    const operationUrl = submitRes.headers.get('Operation-Location');
+    if (!operationUrl) {
+      return res.status(502).json({ error: 'Azure did not return an Operation-Location header' });
+    }
 
-    // fullTextAnnotation gives the cleanest, layout-aware text block
-    const text =
-      visionData.responses?.[0]?.fullTextAnnotation?.text ?? '';
+    // ── Step 2: Poll until the operation is complete ─────────────────────────
+    let result;
+    for (let attempt = 0; attempt < 20; attempt++) {
+      await sleep(1000); // wait 1 second between polls
+
+      const pollRes = await fetch(operationUrl, {
+        headers: { 'Ocp-Apim-Subscription-Key': key },
+      });
+
+      if (!pollRes.ok) {
+        const errBody = await pollRes.text();
+        console.error('Azure poll error:', errBody);
+        return res.status(502).json({ error: 'Azure OCR polling failed', detail: errBody });
+      }
+
+      result = await pollRes.json();
+      if (result.status === 'succeeded') break;
+      if (result.status === 'failed') {
+        return res.status(502).json({ error: 'Azure OCR operation failed', detail: result });
+      }
+      // status === 'running' or 'notStarted' → keep polling
+    }
+
+    if (result?.status !== 'succeeded') {
+      return res.status(504).json({ error: 'Azure OCR timed out' });
+    }
+
+    // ── Step 3: Extract text from the result ─────────────────────────────────
+    const lines = result.analyzeResult.readResults.flatMap(page =>
+      page.lines.map(line => line.text)
+    );
+    const text = lines.join('\n');
 
     return res.status(200).json({ text });
 
@@ -78,3 +98,5 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Internal server error', detail: err.message });
   }
 }
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
