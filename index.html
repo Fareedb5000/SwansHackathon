@@ -601,17 +601,13 @@
         .matter-refresh-btn.spinning svg { animation: spin 0.7s linear infinite; }
 
         .matter-dropdown {
-            position: absolute;
-            top: calc(100% + 4px);
-            left: 0; right: 0;
             background: #151515;
             border: 1px solid rgba(184,151,74,0.25);
-            border-radius: 2px;
-            z-index: 20;
+            border-top: none;
+            border-radius: 0 0 2px 2px;
             max-height: 280px;
             overflow-y: auto;
             display: none;
-            box-shadow: 0 16px 48px rgba(0,0,0,0.6);
         }
         .matter-dropdown.open { display: block; }
         .matter-dropdown-inner { padding: 4px 0; }
