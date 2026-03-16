@@ -48,6 +48,69 @@
 
         .app { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; padding: 48px 24px 96px; }
 
+        /* ── TOP NAV ── */
+        .top-nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 50;
+            background: rgba(13,13,13,0.9);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(184,151,74,0.15);
+        }
+        .top-nav-inner {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 0 24px;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .nav-brand {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 14px;
+            letter-spacing: 0.15em;
+            color: var(--gold);
+            text-transform: uppercase;
+        }
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .nav-btn {
+            background: transparent;
+            border: none;
+            color: var(--mist);
+            font-family: 'DM Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: color 0.2s;
+            position: relative;
+        }
+        .nav-btn::after {
+            content: '';
+            position: absolute;
+            bottom: 4px; left: 16px; right: 16px;
+            height: 1px;
+            background: var(--gold);
+            transform: scaleX(0);
+            transition: transform 0.2s ease;
+        }
+        .nav-btn:hover { color: var(--paper); }
+        .nav-btn.active { color: var(--gold); }
+        .nav-btn.active::after { transform: scaleX(1); }
+
+        /* push content below fixed nav */
+        .app { padding-top: 100px; }
+
+        /* ── PAGE VIEWS ── */
+        .page { display: none; animation: fadeUp 0.5s ease both; }
+        .page.active { display: block; }
+
         /* ── HEADER ── */
         .header { display: flex; flex-direction: column; align-items: center; padding-bottom: 56px; border-bottom: 1px solid rgba(184,151,74,0.3); margin-bottom: 56px; animation: fadeDown 0.8s ease both; }
         .header-rule { display: flex; align-items: center; gap: 16px; width: 100%; max-width: 480px; margin-bottom: 20px; }
@@ -105,54 +168,20 @@
         .review-status { font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); background: var(--gold-dim); border: 1px solid rgba(184,151,74,0.3); padding: 4px 12px; border-radius: 2px; }
 
         /* ── INTELLIGENCE BADGES ── */
-        .badges-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 28px;
-            padding-bottom: 24px;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
-        }
-        .badge {
-            display: flex;
-            align-items: center;
-            gap: 7px;
-            padding: 6px 12px;
-            border-radius: 2px;
-            font-size: 9px;
-            letter-spacing: 0.25em;
-            text-transform: uppercase;
-            border: 1px solid;
-            font-family: 'DM Mono', monospace;
-        }
+        .badges-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; padding-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .badge { display: flex; align-items: center; gap: 7px; padding: 6px 12px; border-radius: 2px; font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase; border: 1px solid; font-family: 'DM Mono', monospace; }
         .badge-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-
         .badge-green  { background: rgba(26,92,58,0.2);  border-color: rgba(111,212,161,0.3); color: #6FD4A1; }
         .badge-green .badge-dot  { background: #6FD4A1; box-shadow: 0 0 6px #6FD4A1; }
-
         .badge-red    { background: rgba(61,18,18,0.4);  border-color: rgba(244,160,160,0.3); color: #F4A0A0; }
         .badge-red .badge-dot    { background: #F4A0A0; box-shadow: 0 0 6px #F4A0A0; }
-
         .badge-grey   { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1); color: var(--mist); }
         .badge-grey .badge-dot   { background: var(--mist); }
-
         .badge-yellow { background: rgba(184,151,74,0.15); border-color: rgba(184,151,74,0.4); color: var(--gold-light); }
         .badge-yellow .badge-dot { background: var(--gold-light); box-shadow: 0 0 6px var(--gold); }
 
         /* ── VALIDATION WARNING BANNER ── */
-        .validation-banner {
-            display: none;
-            align-items: center;
-            gap: 12px;
-            padding: 14px 18px;
-            background: rgba(61,18,18,0.5);
-            border: 1px solid rgba(139,32,32,0.6);
-            border-radius: 2px;
-            margin-bottom: 24px;
-            font-size: 10px;
-            letter-spacing: 0.15em;
-            color: var(--red-text);
-        }
+        .validation-banner { display: none; align-items: center; gap: 12px; padding: 14px 18px; background: rgba(61,18,18,0.5); border: 1px solid rgba(139,32,32,0.6); border-radius: 2px; margin-bottom: 24px; font-size: 10px; letter-spacing: 0.15em; color: var(--red-text); }
         .validation-banner.visible { display: flex; }
         .validation-banner svg { flex-shrink: 0; }
 
@@ -165,17 +194,9 @@
         .form-field label { display: block; font-size: 8px; letter-spacing: 0.35em; text-transform: uppercase; color: var(--mist); margin-bottom: 6px; transition: color 0.2s; }
         .form-field input[type="text"] { width: 100%; background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.1); color: var(--paper); font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 300; padding: 6px 0; outline: none; transition: border-color 0.2s; }
         .form-field input[type="text"]:focus { border-bottom-color: var(--gold); }
-
-        /* Field error state */
         .form-field.has-error label { color: var(--red-text); }
         .form-field.has-error input[type="text"] { border-bottom-color: var(--red-border); }
-        .field-warning {
-            display: none;
-            font-size: 8px;
-            letter-spacing: 0.15em;
-            color: var(--red-text);
-            margin-top: 4px;
-        }
+        .field-warning { display: none; font-size: 8px; letter-spacing: 0.15em; color: var(--red-text); margin-top: 4px; }
         .form-field.has-error .field-warning { display: block; }
 
         /* ── TOGGLE ── */
@@ -194,48 +215,16 @@
         .approve-btn.has-warnings { background: rgba(184,151,74,0.1); border-color: rgba(184,151,74,0.5); color: var(--gold-light); }
 
         /* ── SUCCESS POPUP ── */
-        .success-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.7);
-            backdrop-filter: blur(4px);
-            z-index: 100;
-            align-items: center;
-            justify-content: center;
-        }
+        .success-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 100; align-items: center; justify-content: center; }
         .success-overlay.visible { display: flex; }
-
-        .success-card {
-            background: #0D1A12;
-            border: 1px solid rgba(111,212,161,0.3);
-            border-radius: 2px;
-            padding: 48px;
-            max-width: 440px;
-            width: 90%;
-            text-align: center;
-            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
-            position: relative;
-        }
+        .success-card { background: #0D1A12; border: 1px solid rgba(111,212,161,0.3); border-radius: 2px; padding: 48px; max-width: 440px; width: 90%; text-align: center; animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; position: relative; }
         .success-card::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%; background: linear-gradient(to bottom, #6FD4A1, transparent); }
-
-        .success-icon {
-            width: 56px; height: 56px;
-            border-radius: 50%;
-            background: rgba(111,212,161,0.1);
-            border: 1px solid rgba(111,212,161,0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-        }
+        .success-icon { width: 56px; height: 56px; border-radius: 50%; background: rgba(111,212,161,0.1); border: 1px solid rgba(111,212,161,0.3); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
         .success-title { font-family: 'Playfair Display', serif; font-size: 22px; margin-bottom: 12px; color: #6FD4A1; }
         .success-body { font-size: 11px; color: var(--mist); letter-spacing: 0.1em; line-height: 1.7; margin-bottom: 8px; }
         .success-email { font-size: 12px; color: var(--paper); letter-spacing: 0.05em; margin-bottom: 28px; }
         .success-close { background: transparent; border: 1px solid rgba(111,212,161,0.3); color: #6FD4A1; font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase; padding: 12px 28px; cursor: pointer; transition: all 0.2s; border-radius: 2px; }
         .success-close:hover { background: rgba(111,212,161,0.1); }
-
-        /* Polling spinner inside success card */
         .polling-state { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 20px 0; }
         .mini-spinner { width: 24px; height: 24px; border: 1px solid rgba(111,212,161,0.2); border-top-color: #6FD4A1; border-radius: 50%; animation: spin 0.9s linear infinite; }
         .polling-text { font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--mist); }
@@ -243,10 +232,317 @@
         /* ── TOAST ── */
         .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--red-bg); border: 1px solid var(--red-border); color: var(--red-text); font-size: 10px; letter-spacing: 0.2em; padding: 14px 24px; border-radius: 2px; transition: transform 0.35s ease; z-index: 999; white-space: nowrap; }
         .toast.show { transform: translateX(-50%) translateY(0); }
+        .toast.toast-success { background: rgba(26,92,58,0.9); border-color: rgba(111,212,161,0.5); color: #6FD4A1; }
 
         /* ── DIVIDER ── */
         .divider { display: flex; align-items: center; gap: 12px; margin: 32px 0; color: var(--mist); font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase; }
         .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.07); }
+
+        /* ════════════════════════════════════════
+           SETTINGS PAGE
+        ════════════════════════════════════════ */
+        .settings-header {
+            margin-bottom: 48px;
+            animation: fadeDown 0.6s ease both;
+        }
+        .settings-header h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(28px, 4vw, 40px);
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .settings-header p {
+            font-size: 10px;
+            letter-spacing: 0.25em;
+            color: var(--mist);
+            text-transform: uppercase;
+        }
+
+        .settings-section {
+            margin-bottom: 32px;
+            animation: fadeUp 0.6s 0.1s ease both;
+        }
+        .settings-section + .settings-section {
+            animation-delay: 0.2s;
+        }
+
+        /* ── CLIO AUTH CARD ── */
+        .clio-auth-card {
+            background: rgba(255,255,255,0.025);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 2px;
+            padding: 32px 40px;
+            position: relative;
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 24px;
+            align-items: center;
+        }
+        .clio-auth-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 3px; height: 100%;
+            background: linear-gradient(to bottom, var(--gold), transparent);
+        }
+        @media (max-width: 560px) {
+            .clio-auth-card { grid-template-columns: 1fr; }
+        }
+
+        .clio-info { display: flex; align-items: center; gap: 20px; }
+        .clio-logo-wrap {
+            width: 44px; height: 44px;
+            border-radius: 2px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .clio-text-wrap {}
+        .clio-title {
+            font-size: 13px;
+            letter-spacing: 0.08em;
+            color: var(--paper);
+            margin-bottom: 4px;
+        }
+        .clio-desc {
+            font-size: 9px;
+            letter-spacing: 0.2em;
+            color: var(--mist);
+            text-transform: uppercase;
+        }
+
+        /* Status pill */
+        .clio-status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 9px;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            padding: 4px 10px;
+            border-radius: 2px;
+            border: 1px solid;
+            margin-top: 8px;
+        }
+        .clio-status-pill.disconnected {
+            background: rgba(61,18,18,0.3);
+            border-color: rgba(139,32,32,0.4);
+            color: var(--red-text);
+        }
+        .clio-status-pill.connected {
+            background: rgba(26,92,58,0.2);
+            border-color: rgba(111,212,161,0.3);
+            color: #6FD4A1;
+        }
+        .clio-status-pill.connecting {
+            background: rgba(184,151,74,0.1);
+            border-color: rgba(184,151,74,0.3);
+            color: var(--gold-light);
+        }
+        .pill-dot {
+            width: 5px; height: 5px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+        .pill-dot.pulse {
+            animation: pulse 1.5s ease infinite;
+        }
+
+        /* Auth actions */
+        .clio-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: flex-end;
+        }
+        @media (max-width: 560px) {
+            .clio-actions { align-items: flex-start; }
+        }
+
+        .btn-connect {
+            background: transparent;
+            border: 1px solid rgba(184,151,74,0.5);
+            color: var(--gold);
+            font-family: 'DM Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 0.35em;
+            text-transform: uppercase;
+            padding: 12px 24px;
+            cursor: pointer;
+            transition: all 0.25s;
+            position: relative;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        .btn-connect::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(184,151,74,0.12), transparent);
+            transition: left 0.4s ease;
+        }
+        .btn-connect:hover { border-color: var(--gold); background: var(--gold-dim); }
+        .btn-connect:hover::before { left: 100%; }
+        .btn-connect:disabled { opacity: 0.35; cursor: not-allowed; }
+
+        .btn-disconnect {
+            background: transparent;
+            border: 1px solid rgba(139,32,32,0.4);
+            color: var(--red-text);
+            font-family: 'DM Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            opacity: 0.7;
+        }
+        .btn-disconnect:hover { opacity: 1; background: rgba(61,18,18,0.4); border-color: var(--red-border); }
+
+        /* ── TOKEN INFO BLOCK ── */
+        .token-info {
+            display: none;
+            margin-top: 24px;
+            padding: 20px 24px;
+            background: rgba(26,92,58,0.08);
+            border: 1px solid rgba(111,212,161,0.1);
+            border-radius: 2px;
+        }
+        .token-info.visible { display: block; }
+        .token-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px 24px;
+        }
+        .token-info-item {}
+        .token-info-label {
+            font-size: 8px;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--mist);
+            margin-bottom: 4px;
+        }
+        .token-info-value {
+            font-size: 11px;
+            color: var(--paper);
+            letter-spacing: 0.05em;
+            font-family: 'DM Mono', monospace;
+        }
+        .token-info-value.truncate {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 200px;
+        }
+
+        /* ── CREDENTIALS CONFIG ── */
+        .credentials-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 2px;
+            padding: 32px 40px;
+            margin-top: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+        .credentials-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 3px; height: 100%;
+            background: linear-gradient(to bottom, rgba(184,151,74,0.4), transparent);
+        }
+        .cred-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px 32px;
+            margin-bottom: 24px;
+        }
+        @media (max-width: 600px) { .cred-grid { grid-template-columns: 1fr; } }
+
+        .cred-field label {
+            display: block;
+            font-size: 8px;
+            letter-spacing: 0.35em;
+            text-transform: uppercase;
+            color: var(--mist);
+            margin-bottom: 6px;
+        }
+        .cred-field input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            color: var(--paper);
+            font-family: 'DM Mono', monospace;
+            font-size: 12px;
+            font-weight: 300;
+            padding: 6px 0;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .cred-field input:focus { border-bottom-color: var(--gold); }
+        .cred-field input::placeholder { color: rgba(255,255,255,0.15); }
+
+        .cred-hint {
+            font-size: 9px;
+            letter-spacing: 0.15em;
+            color: var(--mist);
+            line-height: 1.7;
+            margin-bottom: 20px;
+        }
+        .cred-hint a {
+            color: var(--gold);
+            text-decoration: none;
+        }
+        .cred-hint a:hover { text-decoration: underline; }
+
+        .btn-save-creds {
+            background: transparent;
+            border: 1px solid rgba(184,151,74,0.4);
+            color: var(--gold);
+            font-family: 'DM Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 0.35em;
+            text-transform: uppercase;
+            padding: 12px 28px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-save-creds:hover { background: var(--gold-dim); border-color: var(--gold); }
+
+        /* ── COLLAPSIBLE CREDENTIALS ── */
+        .creds-toggle-btn {
+            background: transparent;
+            border: none;
+            color: var(--mist);
+            font-family: 'DM Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.2s;
+            padding: 0;
+            margin-top: 20px;
+        }
+        .creds-toggle-btn:hover { color: var(--gold); }
+        .creds-toggle-icon {
+            transition: transform 0.25s ease;
+            font-size: 10px;
+        }
+        .creds-toggle-icon.open { transform: rotate(90deg); }
+        .credentials-card-wrap {
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height 0.35s ease;
+        }
+        .credentials-card-wrap.open { max-height: 600px; }
 
         /* ── ANIMATIONS ── */
         @keyframes fadeDown { from { opacity:0; transform: translateY(-20px); } to { opacity:1; transform: none; } }
@@ -254,73 +550,169 @@
         @keyframes shake    { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-5px)} 80%{transform:translateX(5px)} }
         @keyframes spin     { to { transform: rotate(360deg); } }
         @keyframes popIn    { from { opacity:0; transform: scale(0.85); } to { opacity:1; transform: scale(1); } }
+        @keyframes pulse    { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
 
         .footer { text-align: center; margin-top: 72px; padding-top: 32px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase; color: rgba(255,255,255,0.2); }
     </style>
 </head>
 <body>
 
+<!-- ── TOP NAV ─────────────────────────────────────────────────── -->
+<nav class="top-nav">
+    <div class="top-nav-inner">
+        <span class="nav-brand">Richards <em style="font-style:italic;font-family:'Cormorant Garamond',serif">&</em> Law</span>
+        <div class="nav-links">
+            <button class="nav-btn active" id="nav-intake" onclick="switchPage('intake')">Intake</button>
+            <button class="nav-btn" id="nav-settings" onclick="switchPage('settings')">Settings</button>
+        </div>
+    </div>
+</nav>
+
 <div class="app">
 
-    <header class="header">
-        <div class="header-rule"><span>Est. 2019</span></div>
-        <h1>Richards <em>&</em> Law</h1>
-        <p class="tagline">Internal Case Intake &nbsp;·&nbsp; Confidential</p>
-    </header>
+    <!-- ══════════════════════════════════════════
+         INTAKE PAGE
+    ══════════════════════════════════════════ -->
+    <div class="page active" id="page-intake">
 
-    <div class="card">
-        <div class="section-label">Step 01 &nbsp;—&nbsp; Identify Matter</div>
-        <div class="matter-wrap">
-            <label class="field-label" for="matterId">Clio Matter ID</label>
-            <input type="text" id="matterId" class="matter-input" placeholder="e.g. 123456789" autocomplete="off">
-        </div>
-        <div class="divider">Step 02 &nbsp;—&nbsp; Upload Scanned Report</div>
-        <div class="dropzone" id="dropzone">
-            <div id="upload-ui">
-                <svg class="dz-icon" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 48 48">
-                    <rect x="8" y="4" width="28" height="38" rx="2" ry="2" stroke-linejoin="round"/>
-                    <polyline points="28,4 28,16 40,16" stroke-linejoin="round"/>
-                    <path d="M40 16 L36 4" stroke-linejoin="round"/>
-                    <line x1="16" y1="26" x2="32" y2="26"/>
-                    <line x1="16" y1="32" x2="28" y2="32"/>
-                </svg>
-                <p class="dz-title">Drop scanned police report here</p>
-                <p class="dz-sub">PDF only &nbsp;·&nbsp; or <span id="browseBtn">click to browse</span></p>
-                <input type="file" id="fileInput" accept="application/pdf">
-            </div>
-            <p class="dz-filename" id="dz-filename"></p>
-        </div>
-        <div class="loading-state" id="loading-state">
-            <p class="progress-text" id="progress-text">Uploading report</p>
-            <div class="progress-wrap"><div class="progress-bar" id="progress-bar"></div></div>
-            <p class="progress-detail" id="progress-detail">Please wait…</p>
-        </div>
-        <button class="process-btn" id="processBtn">▶ &nbsp; Process Report</button>
-    </div>
+        <header class="header">
+            <div class="header-rule"><span>Est. 2019</span></div>
+            <h1>Richards <em>&</em> Law</h1>
+            <p class="tagline">Internal Case Intake &nbsp;·&nbsp; Confidential</p>
+        </header>
 
-    <div class="review-panel" id="review-panel">
         <div class="card">
-            <div class="review-header">
-                <h2 class="review-title">Verify Extracted Data</h2>
-                <span class="review-status" id="review-status">Awaiting Approval</span>
+            <div class="section-label">Step 01 &nbsp;—&nbsp; Identify Matter</div>
+            <div class="matter-wrap">
+                <label class="field-label" for="matterId">Clio Matter ID</label>
+                <input type="text" id="matterId" class="matter-input" placeholder="e.g. 123456789" autocomplete="off">
             </div>
-
-            <!-- INTELLIGENCE BADGES -->
-            <div class="badges-row" id="badges-row"></div>
-
-            <!-- VALIDATION BANNER -->
-            <div class="validation-banner" id="validation-banner">
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                    <path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <span id="validation-message">Fields need attention before approving</span>
+            <div class="divider">Step 02 &nbsp;—&nbsp; Upload Scanned Report</div>
+            <div class="dropzone" id="dropzone">
+                <div id="upload-ui">
+                    <svg class="dz-icon" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 48 48">
+                        <rect x="8" y="4" width="28" height="38" rx="2" ry="2" stroke-linejoin="round"/>
+                        <polyline points="28,4 28,16 40,16" stroke-linejoin="round"/>
+                        <path d="M40 16 L36 4" stroke-linejoin="round"/>
+                        <line x1="16" y1="26" x2="32" y2="26"/>
+                        <line x1="16" y1="32" x2="28" y2="32"/>
+                    </svg>
+                    <p class="dz-title">Drop scanned police report here</p>
+                    <p class="dz-sub">PDF only &nbsp;·&nbsp; or <span id="browseBtn">click to browse</span></p>
+                    <input type="file" id="fileInput" accept="application/pdf">
+                </div>
+                <p class="dz-filename" id="dz-filename"></p>
             </div>
-
-            <div class="section-label">Client Information</div>
-            <form id="clioForm" class="form-grid"></form>
-            <button class="approve-btn" id="approveBtn">✓ &nbsp; Approve &amp; Sync to Clio</button>
+            <div class="loading-state" id="loading-state">
+                <p class="progress-text" id="progress-text">Uploading report</p>
+                <div class="progress-wrap"><div class="progress-bar" id="progress-bar"></div></div>
+                <p class="progress-detail" id="progress-detail">Please wait…</p>
+            </div>
+            <button class="process-btn" id="processBtn">▶ &nbsp; Process Report</button>
         </div>
-    </div>
+
+        <div class="review-panel" id="review-panel">
+            <div class="card">
+                <div class="review-header">
+                    <h2 class="review-title">Verify Extracted Data</h2>
+                    <span class="review-status" id="review-status">Awaiting Approval</span>
+                </div>
+                <div class="badges-row" id="badges-row"></div>
+                <div class="validation-banner" id="validation-banner">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                        <path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span id="validation-message">Fields need attention before approving</span>
+                </div>
+                <div class="section-label">Client Information</div>
+                <form id="clioForm" class="form-grid"></form>
+                <button class="approve-btn" id="approveBtn">✓ &nbsp; Approve &amp; Sync to Clio</button>
+            </div>
+        </div>
+
+    </div><!-- /page-intake -->
+
+    <!-- ══════════════════════════════════════════
+         SETTINGS PAGE
+    ══════════════════════════════════════════ -->
+    <div class="page" id="page-settings">
+
+        <div class="settings-header">
+            <h2>Settings</h2>
+            <p>Integrations &nbsp;·&nbsp; Credentials &nbsp;·&nbsp; Configuration</p>
+        </div>
+
+        <!-- CLIO MANAGE INTEGRATION -->
+        <div class="settings-section">
+            <div class="section-label">Clio Manage</div>
+
+            <div class="clio-auth-card">
+                <div class="clio-info">
+                    <div class="clio-logo-wrap">
+                        <!-- Clio "C" mark -->
+                        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+                            <path d="M18.5 6.5A9 9 0 1 0 18.5 15.5" stroke="#B8974A" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <div class="clio-text-wrap">
+                        <div class="clio-title">Clio Manage</div>
+                        <div class="clio-desc">Practice management · OAuth 2.0</div>
+                        <div class="clio-status-pill disconnected" id="clio-status-pill">
+                            <span class="pill-dot"></span>
+                            <span id="clio-status-text">Not Connected</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="clio-actions" id="clio-actions">
+                    <button class="btn-connect" id="btn-authorize" onclick="startClioAuth()">
+                        ↗ &nbsp; Authorize Clio
+                    </button>
+                </div>
+            </div>
+
+            <!-- Token details (shown when connected) -->
+            <div class="token-info" id="token-info">
+                <div class="token-info-grid">
+                    <div class="token-info-item">
+                        <div class="token-info-label">Account / Firm</div>
+                        <div class="token-info-value" id="ti-firm">—</div>
+                    </div>
+                    <div class="token-info-item">
+                        <div class="token-info-label">Authorized User</div>
+                        <div class="token-info-value" id="ti-user">—</div>
+                    </div>
+                    <div class="token-info-item">
+                        <div class="token-info-label">Token Expires</div>
+                        <div class="token-info-value" id="ti-expires">—</div>
+                    </div>
+                    <div class="token-info-item">
+                        <div class="token-info-label">Access Token</div>
+                        <div class="token-info-value truncate" id="ti-token">—</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- WEBHOOK ENDPOINTS -->
+        <div class="settings-section" style="animation-delay: 0.3s;">
+            <div class="section-label">Webhook Endpoints</div>
+            <div class="credentials-card">
+                <div class="cred-grid">
+                    <div class="cred-field" style="grid-column: 1/-1;">
+                        <label>Extract Webhook (Make.com)</label>
+                        <input type="text" id="setting-webhook-extract" placeholder="https://hook.eu2.make.com/…" autocomplete="off">
+                    </div>
+                    <div class="cred-field" style="grid-column: 1/-1;">
+                        <label>Clio Sync Webhook (Make.com)</label>
+                        <input type="text" id="setting-webhook-clio" placeholder="https://hook.eu2.make.com/…" autocomplete="off">
+                    </div>
+                </div>
+                <button class="btn-save-creds" onclick="saveWebhooks()">Save Webhooks</button>
+            </div>
+        </div>
+
+    </div><!-- /page-settings -->
 
     <footer class="footer">Richards &amp; Law LLP &nbsp;·&nbsp; Internal Use Only &nbsp;·&nbsp; All Data Encrypted in Transit</footer>
 </div>
@@ -353,314 +745,538 @@
 </div>
 
 <script>
-    // ── CONFIG ─────────────────────────────────────────────────────────────────
-    const WEBHOOK_EXTRACT = 'https://hook.eu2.make.com/wy1xrk3jeuwyhy6i45qgoo5ggpc6vu2r';
-    const WEBHOOK_CLIO    = 'https://hook.eu2.make.com/0o2tli1byq15x3q87lxft526ottncrrj';
-    // Your Vercel /api/notify endpoint — Make POSTs here when retainer is sent
-    const NOTIFY_ENDPOINT = '/api/notify';
+// ════════════════════════════════════════════════════════════════════
+//  CONFIG — populated from localStorage or hardcoded defaults
+// ════════════════════════════════════════════════════════════════════
 
-    // ── ELEMENTS ───────────────────────────────────────────────────────────────
-    const dropzone       = document.getElementById('dropzone');
-    const fileInput      = document.getElementById('fileInput');
-    const processBtn     = document.getElementById('processBtn');
-    const loadingState   = document.getElementById('loading-state');
-    const uploadUI       = document.getElementById('upload-ui');
-    const dzFilename     = document.getElementById('dz-filename');
-    const reviewPanel    = document.getElementById('review-panel');
-    const clioForm       = document.getElementById('clioForm');
-    const progressBar    = document.getElementById('progress-bar');
-    const progressText   = document.getElementById('progress-text');
-    const progressDetail = document.getElementById('progress-detail');
+function getConfig() {
+    return {
+        WEBHOOK_EXTRACT : localStorage.getItem('rl_webhook_extract') || 'https://hook.eu2.make.com/wy1xrk3jeuwyhy6i45qgoo5ggpc6vu2r',
+        WEBHOOK_CLIO    : localStorage.getItem('rl_webhook_clio')    || 'https://hook.eu2.make.com/0o2tli1byq15x3q87lxft526ottncrrj',
+        NOTIFY_ENDPOINT : '/api/notify',
+        // Clio OAuth — Client ID is public. Secret lives in Vercel env vars only.
+        CLIO_CLIENT_ID    : 'OyEegaDfMD83c0LFFlFd5EFu6FPkWc0KRobwGRIZ',
+        CLIO_REDIRECT_URI : window.location.origin + (window.location.pathname || '/index.html'),
+        CLIO_AUTH_URL     : 'https://app.clio.com/oauth/authorize',
+        CLIO_TOKEN_URL    : 'https://app.clio.com/oauth/token',
+    };
+}
 
-    let currentFile = null;
-    let pollInterval = null;
+// ════════════════════════════════════════════════════════════════════
+//  PAGE NAVIGATION
+// ════════════════════════════════════════════════════════════════════
 
-    // ── DRAG & DROP ────────────────────────────────────────────────────────────
-    document.getElementById('browseBtn').addEventListener('click', (e) => { e.stopPropagation(); fileInput.click(); });
-    dropzone.addEventListener('click', () => fileInput.click());
-    dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('dragover'); });
-    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
-    dropzone.addEventListener('drop', (e) => { e.preventDefault(); dropzone.classList.remove('dragover'); handleFile(e.dataTransfer.files[0]); });
-    fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+function switchPage(page) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('page-' + page).classList.add('active');
+    document.getElementById('nav-' + page).classList.add('active');
 
-    function handleFile(file) {
-        if (file?.type === 'application/pdf') {
-            currentFile = file;
-            dzFilename.textContent = '⬡  ' + file.name;
-            dzFilename.style.display = 'block';
-            uploadUI.querySelector('.dz-title').textContent = 'Report loaded';
-        }
+    if (page === 'settings') {
+        loadSettingsUI();
     }
+}
 
-    // ── PROCESS ────────────────────────────────────────────────────────────────
-    processBtn.addEventListener('click', async () => {
-        const matterId = document.getElementById('matterId').value.trim();
-        if (!matterId || !currentFile) { shake(processBtn); return; }
+// ════════════════════════════════════════════════════════════════════
+//  SETTINGS UI — populate saved values
+// ════════════════════════════════════════════════════════════════════
 
-        setLoading(true);
-        processBtn.disabled = true;
+function loadSettingsUI() {
+    const cfg = getConfig();
+    document.getElementById('setting-webhook-extract').value = cfg.WEBHOOK_EXTRACT;
+    document.getElementById('setting-webhook-clio').value    = cfg.WEBHOOK_CLIO;
+    refreshClioStatusUI();
+}
 
-        try {
-            setProgress(30, 'Uploading report', 'Sending PDF to pipeline…');
+function saveWebhooks() {
+    const extract = document.getElementById('setting-webhook-extract').value.trim();
+    const clio    = document.getElementById('setting-webhook-clio').value.trim();
+    if (extract) localStorage.setItem('rl_webhook_extract', extract);
+    if (clio)    localStorage.setItem('rl_webhook_clio', clio);
+    showToast('Webhook endpoints saved', 'success');
+}
 
-            const formData = new FormData();
-            formData.append('matterId', matterId);
-            formData.append('file', currentFile, currentFile.name);
+// ════════════════════════════════════════════════════════════════════
+//  CLIO OAUTH 2.0  —  Full-page redirect flow
+//  Flow:
+//    1. User clicks "Authorize Clio"
+//    2. Browser navigates directly to Clio's /oauth/authorize page
+//    3. User approves — Clio redirects back to REDIRECT_URI with ?code=…
+//    4. On return, this page reads ?code from the URL, cleans it up,
+//       then exchanges it for tokens via /api/clio-token (Vercel backend)
+//    5. Tokens stored in localStorage, UI updated, user lands on Settings.
+// ════════════════════════════════════════════════════════════════════
 
-            const response = await fetch(WEBHOOK_EXTRACT, {
-                method: 'POST',
-                body: formData
-            });
+function startClioAuth() {
+    const cfg = getConfig();
 
-            if (!response.ok) throw new Error(`Webhook failed (${response.status})`);
+    // Generate & persist state so we can verify it on return
+    const state = generateState();
+    localStorage.setItem('clio_oauth_state', state);
+    // Remember to land on settings page after redirect back
+    localStorage.setItem('clio_oauth_return_page', 'settings');
 
-            setProgress(80, 'Analysing document', 'Claude is reading the report…');
-            const data = await response.json();
-
-            setProgress(100, 'Complete', 'Building review form…');
-            await sleep(400);
-
-            buildBadges(data);
-            buildReviewForm(data);
-            runValidation();
-
-            reviewPanel.classList.add('visible');
-            reviewPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-        } catch (err) {
-            showToast('Error: ' + err.message);
-            console.error(err);
-        } finally {
-            setLoading(false);
-            processBtn.disabled = false;
-        }
+    const params = new URLSearchParams({
+        response_type : 'code',
+        client_id     : cfg.CLIO_CLIENT_ID,
+        redirect_uri  : cfg.CLIO_REDIRECT_URI,
+        state         : state,
     });
 
-    // ── BADGES ─────────────────────────────────────────────────────────────────
-    function buildBadges(data) {
-        const badgesRow = document.getElementById('badges-row');
+    // Full-page navigation — user goes to Clio, authorizes, comes straight back
+    window.location.href = `${cfg.CLIO_AUTH_URL}?${params.toString()}`;
+}
 
-        const officerPresent  = data.officer_present  === true || data.officer_present  === 'true';
-        const injuriesNoted   = data.injuries_noted   === true || data.injuries_noted   === 'true';
-        const faultAdmission  = data.fault_admission  === true || data.fault_admission  === 'true';
-        const confidence      = (data.confidence_score || 'low').toLowerCase();
+async function exchangeCodeForToken(code) {
+    setClioStatus('connecting', 'Exchanging token…');
+    const cfg = getConfig();
 
-        const confidenceClass = confidence === 'high' ? 'badge-green' : confidence === 'medium' ? 'badge-yellow' : 'badge-red';
-
-        badgesRow.innerHTML = `
-            <div class="badge ${officerPresent ? 'badge-green' : 'badge-red'}">
-                <span class="badge-dot"></span>
-                Officer Present
-            </div>
-            <div class="badge ${injuriesNoted ? 'badge-green' : 'badge-grey'}">
-                <span class="badge-dot"></span>
-                Injuries Noted
-            </div>
-            <div class="badge ${faultAdmission ? 'badge-green' : 'badge-grey'}">
-                <span class="badge-dot"></span>
-                Fault Admission
-            </div>
-            <div class="badge ${confidenceClass}">
-                <span class="badge-dot"></span>
-                Confidence: ${confidence.charAt(0).toUpperCase() + confidence.slice(1)}
-            </div>
-        `;
-    }
-
-    // ── FORM BUILDER ───────────────────────────────────────────────────────────
-    const FIELDS = [
-        { key: 'ClientFirstName',          label: 'Client First Name' },
-        { key: 'ClientLastName',           label: 'Client Last Name' },
-        { key: 'AccidentDate',             label: 'Accident Date' },
-        { key: 'AccidentLocation',         label: 'Accident Location' },
-        { key: 'AccidentDescription',      label: 'Accident Description', full: true },
-        { key: 'ClientInjuries',           label: 'Client Injuries',      full: true },
-        { key: 'ClientVehiclePlate',       label: 'Client Vehicle Plate' },
-        { key: 'ClientPronoun',            label: 'Client Pronoun' },
-        { key: 'OtherPartyName',           label: 'Other Party Name' },
-        { key: 'OtherPartyInsurance',      label: 'Other Party Insurance' },
-        { key: 'OtherPartyVehicle',        label: 'Other Party Vehicle' },
-        { key: 'PoliceReportNumber',       label: 'Police Report Number' },
-        { key: 'RespondingOfficer',        label: 'Responding Officer' },
-        { key: 'StatuteofLimitationsDate', label: 'Statute of Limitations' },
-        { key: 'ScopeParagraph',           label: 'Scope Paragraph', full: true },
-    ];
-
-    function buildReviewForm(data) {
-        clioForm.innerHTML = FIELDS.map(f => `
-            <div class="form-field ${f.full ? 'full' : ''}" id="field-${f.key}">
-                <label>${f.label}</label>
-                <input type="text" name="${f.key}" value="${escHtml(data[f.key] || '')}" oninput="runValidation()">
-                <span class="field-warning">⚠ This field needs attention</span>
-            </div>
-        `).join('') + `
-            <div class="form-field full">
-                <div class="toggle-row">
-                    <input type="checkbox" id="injuriesReported" name="injuriesReported" ${data.InjuriesReported === true || data.InjuriesReported === 'true' ? 'checked' : ''}>
-                    <label class="toggle-box" for="injuriesReported"></label>
-                    <span class="toggle-label">Injuries Reported in this case</span>
-                </div>
-            </div>
-        `;
-    }
-
-    // ── VALIDATION ─────────────────────────────────────────────────────────────
-    const EMPTY_PATTERNS = ['', 'n/a', 'not specified', 'not specified in report', 'unknown', 'none'];
-
-    function isEmpty(val) {
-        return EMPTY_PATTERNS.includes((val || '').trim().toLowerCase());
-    }
-
-    function runValidation() {
-        const approveBtn  = document.getElementById('approveBtn');
-        const banner      = document.getElementById('validation-banner');
-        const message     = document.getElementById('validation-message');
-        let flagged = 0;
-
-        FIELDS.forEach(f => {
-            const fieldEl = document.getElementById('field-' + f.key);
-            const inputEl = fieldEl?.querySelector('input');
-            if (!fieldEl || !inputEl) return;
-
-            if (isEmpty(inputEl.value)) {
-                fieldEl.classList.add('has-error');
-                flagged++;
-            } else {
-                fieldEl.classList.remove('has-error');
-            }
+    /*
+     * Token exchange MUST happen server-side to protect the client secret.
+     * This app proxies through /api/clio-token on your Vercel backend.
+     *
+     * Expected POST body  → { code, redirect_uri }
+     * Expected response   → { access_token, refresh_token, expires_in, token_type }
+     *
+     * If you want to test locally without a backend, you can temporarily
+     * do the exchange directly here, but DO NOT ship that to production.
+     */
+    try {
+        const res = await fetch('/api/clio-token', {
+            method  : 'POST',
+            headers : { 'Content-Type': 'application/json' },
+            body    : JSON.stringify({
+                code,
+                redirect_uri  : cfg.CLIO_REDIRECT_URI,
+                client_id     : cfg.CLIO_CLIENT_ID,
+            }),
         });
 
-        if (flagged > 0) {
-            banner.classList.add('visible');
-            message.textContent = `${flagged} field${flagged > 1 ? 's' : ''} need attention before approving`;
-            approveBtn.classList.add('has-warnings');
-            approveBtn.textContent = `⚠ Approve with ${flagged} incomplete field${flagged > 1 ? 's' : ''}`;
-        } else {
-            banner.classList.remove('visible');
-            approveBtn.classList.remove('has-warnings');
-            approveBtn.textContent = '✓  Approve & Sync to Clio';
+        if (!res.ok) {
+            const errBody = await res.text();
+            throw new Error(`Token endpoint returned ${res.status}: ${errBody}`);
         }
 
-        return flagged;
+        const tokenData = await res.json();
+        storeTokens(tokenData);
+        await fetchClioUserInfo(tokenData.access_token);
+        refreshClioStatusUI();
+        showToast('Clio account connected', 'success');
+
+    } catch (err) {
+        console.error('Token exchange failed:', err);
+        setClioStatus('disconnected', 'Not Connected');
+        showToast('Token exchange failed: ' + err.message);
     }
+}
 
-    // ── APPROVE ────────────────────────────────────────────────────────────────
-    document.getElementById('approveBtn').addEventListener('click', async () => {
-        const fd = new FormData(clioForm);
-        const finalData = Object.fromEntries(fd.entries());
-        const matterId = document.getElementById('matterId').value;
-        finalData.matterId = matterId;
-        finalData.injuriesReported = document.getElementById('injuriesReported')?.checked ?? false;
+// ── TOKEN STORAGE ──────────────────────────────────────────────────
 
-        const approveBtn = document.getElementById('approveBtn');
-        approveBtn.disabled = true;
-        approveBtn.textContent = '⏳  Syncing…';
+function storeTokens(data) {
+    localStorage.setItem('rl_clio_access_token',  data.access_token);
+    localStorage.setItem('rl_clio_refresh_token', data.refresh_token || '');
+    const expiresAt = Date.now() + (data.expires_in || 3600) * 1000;
+    localStorage.setItem('rl_clio_expires_at', expiresAt.toString());
+    localStorage.setItem('rl_clio_token_type', data.token_type || 'Bearer');
+}
 
-        try {
-            const res = await fetch(WEBHOOK_CLIO, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(finalData)
-            });
+function getStoredToken() {
+    const token     = localStorage.getItem('rl_clio_access_token');
+    const expiresAt = parseInt(localStorage.getItem('rl_clio_expires_at') || '0', 10);
+    if (!token) return null;
+    if (Date.now() > expiresAt) return null; // expired
+    return token;
+}
 
-            if (!res.ok) throw new Error(`Clio webhook returned ${res.status}`);
+function isClioConnected() {
+    return !!getStoredToken();
+}
 
-            // Show overlay and start polling Vercel for retainer confirmation
-            document.getElementById('review-status').textContent = 'Synced to Clio';
-            showSuccessOverlay();
-            startPolling(matterId);
+// ── FETCH USER INFO (optional, to show name in UI) ─────────────────
 
-            setTimeout(() => {
-                approveBtn.disabled = false;
-                approveBtn.textContent = '✓  Approve & Sync to Clio';
-                approveBtn.style.borderColor = '';
-            }, 3000);
+async function fetchClioUserInfo(token) {
+    try {
+        // Clio's /api/v4/users/who_am_i.json returns the current user
+        const res = await fetch('https://app.clio.com/api/v4/users/who_am_i.json?fields=name,email_addresses,account{name}', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) return;
+        const json = await res.json();
+        const user = json.data;
+        if (user) {
+            localStorage.setItem('rl_clio_user_name', user.name || '');
+            const accountName = user.account?.name || '';
+            localStorage.setItem('rl_clio_firm_name', accountName);
+        }
+    } catch(e) {
+        // Non-fatal — CORS may block this in some environments
+        console.warn('Could not fetch Clio user info (may need server proxy):', e.message);
+    }
+}
 
-        } catch (err) {
-            showToast('Sync failed: ' + err.message);
+// ── REFRESH STATUS UI ──────────────────────────────────────────────
+
+function refreshClioStatusUI() {
+    const connected = isClioConnected();
+    const actionsEl = document.getElementById('clio-actions');
+    const tokenInfoEl = document.getElementById('token-info');
+
+    if (connected) {
+        setClioStatus('connected', 'Connected');
+        actionsEl.innerHTML = `<button class="btn-disconnect" onclick="disconnectClio()">✕ &nbsp; Disconnect</button>`;
+        tokenInfoEl.classList.add('visible');
+
+        const expiresAt = parseInt(localStorage.getItem('rl_clio_expires_at') || '0', 10);
+        const token     = localStorage.getItem('rl_clio_access_token') || '';
+        const userName  = localStorage.getItem('rl_clio_user_name') || '—';
+        const firmName  = localStorage.getItem('rl_clio_firm_name') || '—';
+
+        document.getElementById('ti-firm').textContent    = firmName;
+        document.getElementById('ti-user').textContent    = userName;
+        document.getElementById('ti-expires').textContent = expiresAt ? formatExpiry(expiresAt) : '—';
+        document.getElementById('ti-token').textContent   = token ? token.slice(0,18) + '…' : '—';
+    } else {
+        setClioStatus('disconnected', 'Not Connected');
+        actionsEl.innerHTML = `<button class="btn-connect" id="btn-authorize" onclick="startClioAuth()">↗ &nbsp; Authorize Clio</button>`;
+        tokenInfoEl.classList.remove('visible');
+    }
+}
+
+function setClioStatus(type, text) {
+    const pill = document.getElementById('clio-status-pill');
+    const dot  = pill.querySelector('.pill-dot');
+    const span = document.getElementById('clio-status-text');
+    pill.className = 'clio-status-pill ' + type;
+    dot.className  = 'pill-dot' + (type === 'connecting' ? ' pulse' : '');
+    span.textContent = text;
+}
+
+function disconnectClio() {
+    if (!confirm('Remove Clio authorization from this browser?')) return;
+    ['rl_clio_access_token','rl_clio_refresh_token','rl_clio_expires_at',
+     'rl_clio_token_type','rl_clio_user_name','rl_clio_firm_name'].forEach(k => localStorage.removeItem(k));
+    refreshClioStatusUI();
+    showToast('Clio disconnected');
+}
+
+function formatExpiry(ms) {
+    const d = new Date(ms);
+    const now = Date.now();
+    const diffH = Math.round((ms - now) / 36e5);
+    if (diffH < 1) return 'Expiring soon';
+    if (diffH < 24) return `In ${diffH}h (${d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})})`;
+    return d.toLocaleDateString([], {day:'numeric',month:'short',year:'numeric'});
+}
+
+function generateState() {
+    const arr = new Uint8Array(16);
+    crypto.getRandomValues(arr);
+    return Array.from(arr, b => b.toString(16).padStart(2,'0')).join('');
+}
+
+// ════════════════════════════════════════════════════════════════════
+//  INTAKE LOGIC (unchanged from original)
+// ════════════════════════════════════════════════════════════════════
+
+const dropzone       = document.getElementById('dropzone');
+const fileInput      = document.getElementById('fileInput');
+const processBtn     = document.getElementById('processBtn');
+const loadingState   = document.getElementById('loading-state');
+const uploadUI       = document.getElementById('upload-ui');
+const dzFilename     = document.getElementById('dz-filename');
+const reviewPanel    = document.getElementById('review-panel');
+const clioForm       = document.getElementById('clioForm');
+const progressBar    = document.getElementById('progress-bar');
+const progressText   = document.getElementById('progress-text');
+const progressDetail = document.getElementById('progress-detail');
+
+let currentFile  = null;
+let pollInterval = null;
+
+document.getElementById('browseBtn').addEventListener('click', (e) => { e.stopPropagation(); fileInput.click(); });
+dropzone.addEventListener('click', () => fileInput.click());
+dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('dragover'); });
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+dropzone.addEventListener('drop', (e) => { e.preventDefault(); dropzone.classList.remove('dragover'); handleFile(e.dataTransfer.files[0]); });
+fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+
+function handleFile(file) {
+    if (file?.type === 'application/pdf') {
+        currentFile = file;
+        dzFilename.textContent = '⬡  ' + file.name;
+        dzFilename.style.display = 'block';
+        uploadUI.querySelector('.dz-title').textContent = 'Report loaded';
+    }
+}
+
+processBtn.addEventListener('click', async () => {
+    const matterId = document.getElementById('matterId').value.trim();
+    if (!matterId || !currentFile) { shake(processBtn); return; }
+
+    const cfg = getConfig();
+    setLoading(true);
+    processBtn.disabled = true;
+
+    try {
+        setProgress(30, 'Uploading report', 'Sending PDF to pipeline…');
+        const formData = new FormData();
+        formData.append('matterId', matterId);
+        formData.append('file', currentFile, currentFile.name);
+
+        const response = await fetch(cfg.WEBHOOK_EXTRACT, { method: 'POST', body: formData });
+        if (!response.ok) throw new Error(`Webhook failed (${response.status})`);
+
+        setProgress(80, 'Analysing document', 'Claude is reading the report…');
+        const data = await response.json();
+
+        setProgress(100, 'Complete', 'Building review form…');
+        await sleep(400);
+
+        buildBadges(data);
+        buildReviewForm(data);
+        runValidation();
+
+        reviewPanel.classList.add('visible');
+        reviewPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    } catch (err) {
+        showToast('Error: ' + err.message);
+        console.error(err);
+    } finally {
+        setLoading(false);
+        processBtn.disabled = false;
+    }
+});
+
+function buildBadges(data) {
+    const badgesRow = document.getElementById('badges-row');
+    const officerPresent = data.officer_present  === true || data.officer_present  === 'true';
+    const injuriesNoted  = data.injuries_noted   === true || data.injuries_noted   === 'true';
+    const faultAdmission = data.fault_admission  === true || data.fault_admission  === 'true';
+    const confidence     = (data.confidence_score || 'low').toLowerCase();
+    const confidenceClass = confidence === 'high' ? 'badge-green' : confidence === 'medium' ? 'badge-yellow' : 'badge-red';
+    badgesRow.innerHTML = `
+        <div class="badge ${officerPresent ? 'badge-green' : 'badge-red'}"><span class="badge-dot"></span> Officer Present</div>
+        <div class="badge ${injuriesNoted  ? 'badge-green' : 'badge-grey'}"><span class="badge-dot"></span> Injuries Noted</div>
+        <div class="badge ${faultAdmission ? 'badge-green' : 'badge-grey'}"><span class="badge-dot"></span> Fault Admission</div>
+        <div class="badge ${confidenceClass}"><span class="badge-dot"></span> Confidence: ${confidence.charAt(0).toUpperCase() + confidence.slice(1)}</div>
+    `;
+}
+
+const FIELDS = [
+    { key: 'ClientFirstName',          label: 'Client First Name' },
+    { key: 'ClientLastName',           label: 'Client Last Name' },
+    { key: 'AccidentDate',             label: 'Accident Date' },
+    { key: 'AccidentLocation',         label: 'Accident Location' },
+    { key: 'AccidentDescription',      label: 'Accident Description', full: true },
+    { key: 'ClientInjuries',           label: 'Client Injuries',      full: true },
+    { key: 'ClientVehiclePlate',       label: 'Client Vehicle Plate' },
+    { key: 'ClientPronoun',            label: 'Client Pronoun' },
+    { key: 'OtherPartyName',           label: 'Other Party Name' },
+    { key: 'OtherPartyInsurance',      label: 'Other Party Insurance' },
+    { key: 'OtherPartyVehicle',        label: 'Other Party Vehicle' },
+    { key: 'PoliceReportNumber',       label: 'Police Report Number' },
+    { key: 'RespondingOfficer',        label: 'Responding Officer' },
+    { key: 'StatuteofLimitationsDate', label: 'Statute of Limitations' },
+    { key: 'ScopeParagraph',           label: 'Scope Paragraph', full: true },
+];
+
+function buildReviewForm(data) {
+    clioForm.innerHTML = FIELDS.map(f => `
+        <div class="form-field ${f.full ? 'full' : ''}" id="field-${f.key}">
+            <label>${f.label}</label>
+            <input type="text" name="${f.key}" value="${escHtml(data[f.key] || '')}" oninput="runValidation()">
+            <span class="field-warning">⚠ This field needs attention</span>
+        </div>
+    `).join('') + `
+        <div class="form-field full">
+            <div class="toggle-row">
+                <input type="checkbox" id="injuriesReported" name="injuriesReported" ${data.InjuriesReported === true || data.InjuriesReported === 'true' ? 'checked' : ''}>
+                <label class="toggle-box" for="injuriesReported"></label>
+                <span class="toggle-label">Injuries Reported in this case</span>
+            </div>
+        </div>
+    `;
+}
+
+const EMPTY_PATTERNS = ['', 'n/a', 'not specified', 'not specified in report', 'unknown', 'none'];
+function isEmpty(val) { return EMPTY_PATTERNS.includes((val || '').trim().toLowerCase()); }
+
+function runValidation() {
+    const approveBtn = document.getElementById('approveBtn');
+    const banner     = document.getElementById('validation-banner');
+    const message    = document.getElementById('validation-message');
+    let flagged = 0;
+    FIELDS.forEach(f => {
+        const fieldEl = document.getElementById('field-' + f.key);
+        const inputEl = fieldEl?.querySelector('input');
+        if (!fieldEl || !inputEl) return;
+        if (isEmpty(inputEl.value)) { fieldEl.classList.add('has-error'); flagged++; }
+        else fieldEl.classList.remove('has-error');
+    });
+    if (flagged > 0) {
+        banner.classList.add('visible');
+        message.textContent = `${flagged} field${flagged > 1 ? 's' : ''} need attention before approving`;
+        approveBtn.classList.add('has-warnings');
+        approveBtn.textContent = `⚠ Approve with ${flagged} incomplete field${flagged > 1 ? 's' : ''}`;
+    } else {
+        banner.classList.remove('visible');
+        approveBtn.classList.remove('has-warnings');
+        approveBtn.textContent = '✓  Approve & Sync to Clio';
+    }
+    return flagged;
+}
+
+document.getElementById('approveBtn').addEventListener('click', async () => {
+    const fd = new FormData(clioForm);
+    const finalData = Object.fromEntries(fd.entries());
+    const matterId = document.getElementById('matterId').value;
+    finalData.matterId = matterId;
+    finalData.injuriesReported = document.getElementById('injuriesReported')?.checked ?? false;
+
+    // Attach the Clio access token if available
+    const token = getStoredToken();
+    if (token) finalData._clioToken = token;
+
+    const approveBtn = document.getElementById('approveBtn');
+    approveBtn.disabled = true;
+    approveBtn.textContent = '⏳  Syncing…';
+
+    const cfg = getConfig();
+    try {
+        const res = await fetch(cfg.WEBHOOK_CLIO, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(finalData)
+        });
+        if (!res.ok) throw new Error(`Clio webhook returned ${res.status}`);
+        document.getElementById('review-status').textContent = 'Synced to Clio';
+        showSuccessOverlay();
+        startPolling(matterId);
+        setTimeout(() => {
             approveBtn.disabled = false;
             approveBtn.textContent = '✓  Approve & Sync to Clio';
-        }
-    });
-
-    // ── POLLING ────────────────────────────────────────────────────────────────
-    function showSuccessOverlay() {
-        document.getElementById('success-polling').style.display = 'block';
-        document.getElementById('success-content').style.display = 'none';
-        document.getElementById('success-overlay').classList.add('visible');
-    }
-
-    function closeSuccess() {
-        document.getElementById('success-overlay').classList.remove('visible');
-        if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
-    }
-
-    function startPolling(matterId) {
-        if (pollInterval) clearInterval(pollInterval);
-
-        pollInterval = setInterval(async () => {
-            try {
-                const res = await fetch(`${NOTIFY_ENDPOINT}?matterId=${encodeURIComponent(matterId)}`);
-                if (!res.ok) return;
-                const data = await res.json();
-
-                if (data.status === 'sent') {
-                    clearInterval(pollInterval);
-                    pollInterval = null;
-
-                    document.getElementById('success-email').textContent = data.email || 'the client';
-                    document.getElementById('success-polling').style.display = 'none';
-                    document.getElementById('success-content').style.display = 'block';
-                }
-            } catch (e) {
-                // Silently ignore poll errors — keep trying
-            }
         }, 3000);
+    } catch (err) {
+        showToast('Sync failed: ' + err.message);
+        approveBtn.disabled = false;
+        approveBtn.textContent = '✓  Approve & Sync to Clio';
+    }
+});
 
-        // Stop polling after 2 minutes to avoid infinite loops
-        setTimeout(() => {
-            if (pollInterval) {
-                clearInterval(pollInterval);
-                pollInterval = null;
-                // Show success anyway if still waiting
+function showSuccessOverlay() {
+    document.getElementById('success-polling').style.display = 'block';
+    document.getElementById('success-content').style.display = 'none';
+    document.getElementById('success-overlay').classList.add('visible');
+}
+
+function closeSuccess() {
+    document.getElementById('success-overlay').classList.remove('visible');
+    if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+}
+
+function startPolling(matterId) {
+    if (pollInterval) clearInterval(pollInterval);
+    const cfg = getConfig();
+    pollInterval = setInterval(async () => {
+        try {
+            const res = await fetch(`${cfg.NOTIFY_ENDPOINT}?matterId=${encodeURIComponent(matterId)}`);
+            if (!res.ok) return;
+            const data = await res.json();
+            if (data.status === 'sent') {
+                clearInterval(pollInterval); pollInterval = null;
+                document.getElementById('success-email').textContent = data.email || 'the client';
                 document.getElementById('success-polling').style.display = 'none';
                 document.getElementById('success-content').style.display = 'block';
-                document.getElementById('success-email').textContent = 'the client';
             }
-        }, 120000);
+        } catch(e) { /* keep polling */ }
+    }, 3000);
+    setTimeout(() => {
+        if (pollInterval) {
+            clearInterval(pollInterval); pollInterval = null;
+            document.getElementById('success-polling').style.display = 'none';
+            document.getElementById('success-content').style.display = 'block';
+            document.getElementById('success-email').textContent = 'the client';
+        }
+    }, 120000);
+}
+
+// ════════════════════════════════════════════════════════════════════
+//  HELPERS
+// ════════════════════════════════════════════════════════════════════
+
+function setLoading(on) {
+    loadingState.classList.toggle('active', on);
+    uploadUI.style.display   = on ? 'none' : 'block';
+    dzFilename.style.display = on ? 'none' : (currentFile ? 'block' : 'none');
+}
+function setProgress(pct, label, detail) {
+    progressBar.style.width    = pct + '%';
+    progressText.textContent   = label;
+    progressDetail.textContent = detail;
+}
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function shake(el) {
+    el.style.animation = 'none';
+    el.offsetHeight;
+    el.style.animation = 'shake 0.4s ease';
+}
+function showToast(msg, type = 'error') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast' + (type === 'success' ? ' toast-success' : '');
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// ════════════════════════════════════════════════════════════════════
+//  OAUTH CALLBACK HANDLER
+//  Clio redirects back here with ?code=…&state=…
+//  We verify state, exchange the code, then strip the URL params
+//  so a page refresh doesn't re-trigger the flow.
+// ════════════════════════════════════════════════════════════════════
+
+(function handleOAuthCallback() {
+    const params = new URLSearchParams(window.location.search);
+    const code   = params.get('code');
+    const state  = params.get('state');
+    const error  = params.get('error');
+
+    if (!code && !error) return; // Normal page load — nothing to do
+
+    // Clean the URL immediately so a refresh doesn't replay the flow
+    const cleanUrl = window.location.origin + window.location.pathname;
+    window.history.replaceState({}, document.title, cleanUrl);
+
+    if (error) {
+        // Land on settings page and show error
+        switchPage('settings');
+        showToast('Authorization denied: ' + error);
+        return;
     }
 
-    // ── HELPERS ────────────────────────────────────────────────────────────────
-    function setLoading(on) {
-        loadingState.classList.toggle('active', on);
-        uploadUI.style.display   = on ? 'none' : 'block';
-        dzFilename.style.display = on ? 'none' : (currentFile ? 'block' : 'none');
+    const savedState = localStorage.getItem('clio_oauth_state');
+    localStorage.removeItem('clio_oauth_state');
+
+    if (!savedState || state !== savedState) {
+        switchPage('settings');
+        showToast('OAuth state mismatch — please try again');
+        return;
     }
 
-    function setProgress(pct, label, detail) {
-        progressBar.style.width    = pct + '%';
-        progressText.textContent   = label;
-        progressDetail.textContent = detail;
-    }
+    // Land on settings so the user sees the result
+    switchPage('settings');
+    setClioStatus('connecting', 'Exchanging token…');
+    exchangeCodeForToken(code);
+})();
 
-    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-    function escHtml(s) {
-        return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    }
-
-    function shake(el) {
-        el.style.animation = 'none';
-        el.offsetHeight;
-        el.style.animation = 'shake 0.4s ease';
-    }
-
-    function showToast(msg) {
-        const t = document.getElementById('toast');
-        t.textContent = msg;
-        t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), 4000);
-    }
+// Init: restore Clio status on load
+window.addEventListener('DOMContentLoaded', () => {
+    refreshClioStatusUI();
+});
 </script>
 </body>
 </html>
