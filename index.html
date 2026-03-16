@@ -544,6 +544,135 @@
         }
         .credentials-card-wrap.open { max-height: 600px; }
 
+
+        /* ── MATTER DROPDOWN ── */
+        .matter-dropdown-wrap {
+            position: relative;
+        }
+        .matter-search-box {
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid rgba(184,151,74,0.4);
+            transition: border-color 0.3s;
+        }
+        .matter-search-box:focus-within {
+            border-bottom-color: var(--gold);
+        }
+        .matter-search-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--paper);
+            font-family: 'DM Mono', monospace;
+            font-size: 28px;
+            font-weight: 300;
+            padding: 8px 0;
+            outline: none;
+            letter-spacing: 0.05em;
+            min-width: 0;
+        }
+        .matter-search-input::placeholder { color: rgba(255,255,255,0.15); }
+        .matter-search-meta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+            padding-left: 12px;
+        }
+        .matter-selected-id {
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            color: var(--gold);
+            font-family: 'DM Mono', monospace;
+        }
+        .matter-refresh-btn {
+            background: transparent;
+            border: none;
+            color: var(--mist);
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            transition: color 0.2s;
+        }
+        .matter-refresh-btn:hover { color: var(--gold); }
+        .matter-refresh-btn.spinning svg { animation: spin 0.7s linear infinite; }
+
+        .matter-dropdown {
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0; right: 0;
+            background: #151515;
+            border: 1px solid rgba(184,151,74,0.25);
+            border-radius: 2px;
+            z-index: 20;
+            max-height: 280px;
+            overflow-y: auto;
+            display: none;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.6);
+        }
+        .matter-dropdown.open { display: block; }
+        .matter-dropdown-inner { padding: 4px 0; }
+        .matter-dropdown-empty {
+            padding: 20px 16px;
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            color: var(--mist);
+            text-align: center;
+            text-transform: uppercase;
+        }
+        .matter-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            transition: background 0.15s;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        .matter-item:last-child { border-bottom: none; }
+        .matter-item:hover { background: rgba(184,151,74,0.08); }
+        .matter-item.selected { background: rgba(184,151,74,0.12); }
+        .matter-item-name {
+            font-size: 13px;
+            color: var(--paper);
+            letter-spacing: 0.03em;
+            font-family: 'DM Mono', monospace;
+        }
+        .matter-item-meta {
+            font-size: 9px;
+            letter-spacing: 0.2em;
+            color: var(--mist);
+            text-transform: uppercase;
+            display: flex;
+            gap: 12px;
+        }
+        .matter-item-id { color: var(--gold); }
+        .matter-not-connected {
+            padding: 20px 16px;
+            text-align: center;
+        }
+        .matter-not-connected p {
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            color: var(--mist);
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+        .matter-connect-link {
+            font-size: 9px;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--gold);
+            background: transparent;
+            border: 1px solid rgba(184,151,74,0.4);
+            padding: 8px 16px;
+            cursor: pointer;
+            font-family: 'DM Mono', monospace;
+            transition: all 0.2s;
+        }
+        .matter-connect-link:hover { background: var(--gold-dim); }
+
         /* ── ANIMATIONS ── */
         @keyframes fadeDown { from { opacity:0; transform: translateY(-20px); } to { opacity:1; transform: none; } }
         @keyframes fadeUp   { from { opacity:0; transform: translateY(24px);  } to { opacity:1; transform: none; } }
@@ -584,8 +713,30 @@
         <div class="card">
             <div class="section-label">Step 01 &nbsp;—&nbsp; Identify Matter</div>
             <div class="matter-wrap">
-                <label class="field-label" for="matterId">Clio Matter ID</label>
-                <input type="text" id="matterId" class="matter-input" placeholder="e.g. 123456789" autocomplete="off">
+                <label class="field-label">Select Matter</label>
+                <div class="matter-dropdown-wrap" id="matter-dropdown-wrap">
+                    <div class="matter-search-box" id="matter-search-box">
+                        <input type="text" id="matterSearch" class="matter-search-input" placeholder="Search matters…" autocomplete="off" oninput="filterMatters(this.value)" onfocus="openDropdown()" onblur="scheduleClose()">
+                        <div class="matter-search-meta" id="matter-search-meta">
+                            <span class="matter-selected-id" id="matter-selected-id"></span>
+                            <button class="matter-refresh-btn" onclick="loadMatters()" title="Refresh matters">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+                                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="matter-dropdown" id="matter-dropdown">
+                        <div class="matter-dropdown-inner" id="matter-dropdown-inner">
+                            <div class="matter-dropdown-empty" id="matter-dropdown-empty">
+                                <span id="matter-empty-text">Click to load matters</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Hidden field that actually holds the matter ID for submission -->
+                <input type="hidden" id="matterId" value="">
             </div>
             <div class="divider">Step 02 &nbsp;—&nbsp; Upload Scanned Report</div>
             <div class="dropzone" id="dropzone">
@@ -972,6 +1123,124 @@ function generateState() {
     const arr = new Uint8Array(16);
     crypto.getRandomValues(arr);
     return Array.from(arr, b => b.toString(16).padStart(2,'0')).join('');
+}
+
+// ════════════════════════════════════════════════════════════════════
+//  MATTERS DROPDOWN
+// ════════════════════════════════════════════════════════════════════
+
+let allMatters = [];
+let closeTimer = null;
+
+async function loadMatters() {
+    const token = getStoredToken();
+    const dropdown = document.getElementById('matter-dropdown');
+    const inner    = document.getElementById('matter-dropdown-inner');
+    const emptyEl  = document.getElementById('matter-dropdown-empty');
+    const emptyTxt = document.getElementById('matter-empty-text');
+    const refreshBtn = document.querySelector('.matter-refresh-btn');
+
+    if (!token) {
+        inner.innerHTML = `
+            <div class="matter-not-connected">
+                <p>Clio account not connected</p>
+                <button class="matter-connect-link" onclick="switchPage('settings')">↗ Connect in Settings</button>
+            </div>`;
+        dropdown.classList.add('open');
+        return;
+    }
+
+    refreshBtn && refreshBtn.classList.add('spinning');
+    emptyTxt.textContent = 'Loading matters…';
+    inner.innerHTML = '<div class="matter-dropdown-empty"><span>Loading matters…</span></div>';
+    dropdown.classList.add('open');
+
+    try {
+        // Fetch open matters from Clio — up to 200
+        const res = await fetch(
+            'https://app.clio.com/api/v4/matters.json?fields=id,display_number,description,status,client{name}&status=open&limit=200',
+            { headers: { 'Authorization': `Bearer ${token}` } }
+        );
+
+        if (res.status === 401) {
+            // Token expired
+            ['rl_clio_access_token','rl_clio_refresh_token','rl_clio_expires_at'].forEach(k => localStorage.removeItem(k));
+            inner.innerHTML = `
+                <div class="matter-not-connected">
+                    <p>Session expired — reconnect Clio</p>
+                    <button class="matter-connect-link" onclick="switchPage('settings')">↗ Reconnect</button>
+                </div>`;
+            return;
+        }
+
+        if (!res.ok) throw new Error('Clio API returned ' + res.status);
+
+        const data = await res.json();
+        allMatters = data.data || [];
+        renderMatters(allMatters);
+
+    } catch(err) {
+        inner.innerHTML = `<div class="matter-dropdown-empty"><span>Failed to load — ${err.message}</span></div>`;
+    } finally {
+        refreshBtn && refreshBtn.classList.remove('spinning');
+    }
+}
+
+function renderMatters(matters) {
+    const inner = document.getElementById('matter-dropdown-inner');
+    if (!matters.length) {
+        inner.innerHTML = '<div class="matter-dropdown-empty"><span>No open matters found</span></div>';
+        return;
+    }
+    inner.innerHTML = matters.map(m => `
+        <div class="matter-item" data-id="${m.id}" data-name="${escHtml(m.description || m.display_number)}" onclick="selectMatter(${m.id}, '${escHtml(m.description || m.display_number)}', '${escHtml(m.display_number)}', '${escHtml(m.client?.name || '')}')">
+            <span class="matter-item-name">${escHtml(m.description || m.display_number)}</span>
+            <span class="matter-item-meta">
+                <span class="matter-item-id">#${escHtml(m.display_number)}</span>
+                ${m.client?.name ? `<span>${escHtml(m.client.name)}</span>` : ''}
+            </span>
+        </div>
+    `).join('');
+}
+
+function filterMatters(query) {
+    openDropdown();
+    if (!allMatters.length) { loadMatters(); return; }
+    const q = query.toLowerCase();
+    const filtered = allMatters.filter(m =>
+        (m.description || '').toLowerCase().includes(q) ||
+        (m.display_number || '').toLowerCase().includes(q) ||
+        (m.client?.name || '').toLowerCase().includes(q)
+    );
+    renderMatters(filtered);
+}
+
+function selectMatter(id, name, displayNumber, clientName) {
+    document.getElementById('matterId').value      = id;
+    document.getElementById('matterSearch').value  = name;
+    document.getElementById('matter-selected-id').textContent = '#' + displayNumber;
+
+    // Mark selected
+    document.querySelectorAll('.matter-item').forEach(el => {
+        el.classList.toggle('selected', el.dataset.id == id);
+    });
+
+    closeDropdown();
+}
+
+function openDropdown() {
+    if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; }
+    const dropdown = document.getElementById('matter-dropdown');
+    dropdown.classList.add('open');
+    if (!allMatters.length) loadMatters();
+}
+
+function scheduleClose() {
+    closeTimer = setTimeout(closeDropdown, 200);
+}
+
+function closeDropdown() {
+    document.getElementById('matter-dropdown').classList.remove('open');
 }
 
 // ════════════════════════════════════════════════════════════════════
