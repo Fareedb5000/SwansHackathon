@@ -122,8 +122,9 @@
         .tagline { margin-top: 12px; font-size: 10px; letter-spacing: 0.35em; text-transform: uppercase; color: var(--mist); }
 
         /* ── CARDS ── */
-        .card { background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.08); border-radius: 2px; padding: 40px; position: relative; overflow: hidden; }
-        .card::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%; background: linear-gradient(to bottom, var(--gold), transparent); }
+        .card { background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.08); border-radius: 2px; padding: 40px; position: relative; overflow: visible; }
+        .card::after { content: ''; position: absolute; inset: 0; border-radius: 2px; pointer-events: none; }
+        .card::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%; background: linear-gradient(to bottom, var(--gold), transparent); border-radius: 2px 0 0 2px; }
 
         .section-label { font-size: 9px; letter-spacing: 0.4em; text-transform: uppercase; color: var(--gold); margin-bottom: 28px; display: flex; align-items: center; gap: 12px; }
         .section-label::after { content: ''; flex: 1; height: 1px; background: rgba(184,151,74,0.2); }
@@ -548,6 +549,7 @@
         /* ── MATTER DROPDOWN ── */
         .matter-dropdown-wrap {
             position: relative;
+            z-index: 10;
         }
         .matter-search-box {
             display: flex;
