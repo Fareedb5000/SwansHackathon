@@ -1,43 +1,40 @@
 export default async function handler(req, res) {
-    if (req.method !== 'POST') {
+    if (req.method !== 'GET') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const { code, redirect_uri, client_id } = req.body;
-
-    if (!code || !redirect_uri || !client_id) {
-        return res.status(400).json({ error: 'Missing required fields' });
+    const authHeader = req.headers['authorization'];
+    if (!authHeader) {
+        return res.status(401).json({ error: 'Missing Authorization header' });
     }
 
-    const client_secret = process.env.CLIO_CLIENT_SECRET;
-    if (!client_secret) {
-        return res.status(500).json({ error: 'CLIO_CLIENT_SECRET not configured on server' });
+    // Take whatever path+query comes after /api/clio-proxy
+    // e.g. /api/clio-proxy?path=/v4/matters.json&fields=id,display_number...
+    const clioPath = req.query.path;
+    if (!clioPath) {
+        return res.status(400).json({ error: 'Missing path param' });
     }
+
+    // Forward all other query params to Clio
+    const forwardParams = new URLSearchParams();
+    for (const [key, val] of Object.entries(req.query)) {
+        if (key !== 'path') forwardParams.append(key, val);
+    }
+
+    const clioUrl = `https://app.clio.com/api${clioPath}?${forwardParams.toString()}`;
 
     try {
-        const params = new URLSearchParams({
-            grant_type    : 'authorization_code',
-            code,
-            redirect_uri,
-            client_id,
-            client_secret,
+        const clioRes = await fetch(clioUrl, {
+            headers: {
+                'Authorization' : authHeader,
+                'Content-Type'  : 'application/json',
+            },
         });
 
-        const response = await fetch('https://app.clio.com/oauth/token', {
-            method  : 'POST',
-            headers : { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body    : params.toString(),
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            return res.status(response.status).json({ error: data.error || 'Token exchange failed', detail: data });
-        }
-
-        return res.status(200).json(data);
+        const data = await clioRes.json();
+        return res.status(clioRes.status).json(data);
 
     } catch (err) {
-        return res.status(500).json({ error: 'Internal server error', detail: err.message });
+        return res.status(500).json({ error: 'Proxy error', detail: err.message });
     }
 }

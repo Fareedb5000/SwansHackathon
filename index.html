@@ -1048,7 +1048,7 @@ function isClioConnected() {
 async function fetchClioUserInfo(token) {
     try {
         // Clio's /api/v4/users/who_am_i.json returns the current user
-        const res = await fetch('https://app.clio.com/api/v4/users/who_am_i.json?fields=name,email_addresses,account{name}', {
+        const res = await fetch('/api/clio-proxy?path=/v4/users/who_am_i.json&fields=name,account{name}', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!res.ok) return;
@@ -1158,7 +1158,7 @@ async function loadMatters() {
     try {
         // Fetch open matters from Clio — up to 200
         const res = await fetch(
-            'https://app.clio.com/api/v4/matters.json?fields=id,display_number,description,status,client{name}&status=open&limit=200',
+            '/api/clio-proxy?path=/v4/matters.json&fields=id,display_number,description,status,client{name}&status=open&limit=200',
             { headers: { 'Authorization': `Bearer ${token}` } }
         );
 
