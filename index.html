@@ -162,8 +162,7 @@
         .process-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
         /* ── REVIEW PANEL ── */
-        .review-panel { display: none; margin-top: 48px; animation: fadeUp 0.6s ease both; }
-        .review-panel.visible { display: block; }
+        /* review-panel styles in split section below */
         .review-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
         .review-title { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; }
         .review-status { font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); background: var(--gold-dim); border: 1px solid rgba(184,151,74,0.3); padding: 4px 12px; border-radius: 2px; }
@@ -551,7 +550,6 @@
         .review-panel {
             display: none;
             margin-top: 48px;
-            /* Break out of the .app max-width constraint */
             margin-left: calc(-1 * (100vw - 860px) / 2);
             margin-right: calc(-1 * (100vw - 860px) / 2);
             width: 100vw;
@@ -559,12 +557,7 @@
             animation: fadeUp 0.6s ease both;
         }
         @media (max-width: 908px) {
-            .review-panel {
-                margin-left: -24px;
-                margin-right: -24px;
-                width: calc(100% + 48px);
-                max-width: none;
-            }
+            .review-panel { margin-left: -24px; margin-right: -24px; width: calc(100% + 48px); }
         }
         .review-panel.visible { display: block; }
 
@@ -572,9 +565,8 @@
             display: flex;
             align-items: flex-start;
             justify-content: space-between;
-            padding: 0 40px 28px;
-            max-width: 1400px;
-            margin: 0 auto;
+            padding: 32px 48px 24px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
             flex-wrap: wrap;
             gap: 12px;
         }
@@ -586,25 +578,19 @@
             margin-top: 6px;
         }
 
+        /* 60/40 split — PDF gets more room */
         .split-body {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 60fr 40fr;
             gap: 0;
-            max-width: 1400px;
-            margin: 0 auto;
-            min-height: 80vh;
+            align-items: start;
         }
-        @media (max-width: 860px) {
-            .split-body {
-                grid-template-columns: 1fr;
-            }
+        @media (max-width: 900px) {
+            .split-body { grid-template-columns: 1fr; }
         }
 
-        /* Pane shared styles */
-        .split-pane {
-            border-top: 1px solid rgba(255,255,255,0.07);
-            position: relative;
-        }
+        .split-pane { position: relative; }
+
         .split-pane-label {
             display: flex;
             align-items: center;
@@ -613,41 +599,44 @@
             letter-spacing: 0.35em;
             text-transform: uppercase;
             color: var(--mist);
-            padding: 16px 32px;
+            padding: 14px 32px;
             border-bottom: 1px solid rgba(255,255,255,0.05);
-            position: sticky;
-            top: 52px; /* below nav */
-            background: rgba(13,13,13,0.95);
+            background: rgba(13,13,13,0.97);
             backdrop-filter: blur(8px);
+            position: sticky;
+            top: 52px;
             z-index: 5;
         }
-        .split-pane-label svg { opacity: 0.5; }
+        .split-pane-label svg { opacity: 0.5; flex-shrink: 0; }
 
-        /* PDF pane */
+        /* PDF pane — sticky viewer, tall enough to read without zooming */
         .split-pane-pdf {
             border-right: 1px solid rgba(255,255,255,0.07);
+            position: sticky;
+            top: 52px;
+            height: calc(100vh - 52px);
+            display: flex;
+            flex-direction: column;
         }
         .pdf-viewer-wrap {
-            position: sticky;
-            top: calc(52px + 41px); /* nav + label */
-            height: calc(100vh - 52px - 41px);
+            flex: 1;
+            overflow: hidden;
         }
         .pdf-iframe {
             width: 100%;
             height: 100%;
             border: none;
-            background: #111;
+            background: #1a1a1a;
             display: block;
         }
 
-        /* Form pane */
+        /* Form pane — independent scroll */
         .split-pane-form {
-            padding: 32px 40px 64px;
-            overflow-y: auto;
+            border-left: 1px solid rgba(255,255,255,0.07);
+            padding: 32px 40px 80px;
+            min-height: calc(100vh - 52px);
         }
-        .split-pane-form .badges-row {
-            margin-bottom: 24px;
-        }
+        .split-pane-form .section-label { margin-top: 8px; }
         .split-pane-form .approve-btn {
             position: sticky;
             bottom: 0;
