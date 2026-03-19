@@ -781,6 +781,35 @@
         @keyframes pulse    { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
 
         .footer { text-align: center; margin-top: 72px; padding-top: 32px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase; color: rgba(255,255,255,0.2); }
+
+        /* ── TIMER ── */
+        .nav-timer {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 0.15em;
+            color: var(--gold);
+            padding: 4px 12px;
+            border: 1px solid rgba(184,151,74,0.25);
+            border-radius: 2px;
+            background: rgba(184,151,74,0.07);
+            transition: color 0.3s, border-color 0.3s, background 0.3s;
+        }
+        .nav-timer-dot {
+            width: 5px; height: 5px;
+            border-radius: 50%;
+            background: currentColor;
+            flex-shrink: 0;
+        }
+        .nav-timer.running { color: var(--gold); }
+        .nav-timer.running .nav-timer-dot { animation: pulse 1s ease infinite; }
+        .nav-timer.paused { color: var(--mist); border-color: rgba(138,130,120,0.25); background: rgba(138,130,120,0.07); }
+        .nav-timer.paused .nav-timer-dot { animation: none; }
+        .nav-timer.stopped { color: #6FD4A1; border-color: rgba(111,212,161,0.3); background: rgba(26,92,58,0.15); }
+        .nav-timer.stopped .nav-timer-dot { animation: none; }
+        .nav-timer-label { font-size: 8px; letter-spacing: 0.3em; text-transform: uppercase; opacity: 0.7; }
     </style>
 </head>
 <body>
@@ -789,6 +818,11 @@
 <nav class="top-nav">
     <div class="top-nav-inner">
         <span class="nav-brand">Richards <em style="font-style:italic;font-family:'Cormorant Garamond',serif">&</em> Law</span>
+        <div class="nav-timer" id="nav-timer">
+            <span class="nav-timer-dot"></span>
+            <span class="nav-timer-label" id="nav-timer-label">Processing</span>
+            <span id="nav-timer-display">0:00</span>
+        </div>
         <div class="nav-links">
             <button class="nav-btn active" id="nav-intake" onclick="switchPage('intake')">Intake</button>
             <button class="nav-btn" id="nav-settings" onclick="switchPage('settings')">Settings</button>
@@ -1373,6 +1407,71 @@ function closeDropdown() {
 }
 
 // ════════════════════════════════════════════════════════════════════
+//  TIMER
+// ════════════════════════════════════════════════════════════════════
+
+let timerInterval    = null;
+let timerStarted     = 0;    // timestamp when last started/resumed
+let timerAccumulated = 0;    // ms accumulated before current run
+let timerState       = 'idle'; // 'idle' | 'running' | 'paused' | 'stopped'
+
+function formatTime(ms) {
+    const totalSec = Math.floor(ms / 1000);
+    const mins = Math.floor(totalSec / 60);
+    const secs = totalSec % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+}
+
+function updateTimerDisplay() {
+    const elapsed = timerAccumulated + (timerState === 'running' ? Date.now() - timerStarted : 0);
+    document.getElementById('nav-timer-display').textContent = formatTime(elapsed);
+}
+
+function startTimer() {
+    timerAccumulated = 0;
+    timerStarted = Date.now();
+    timerState = 'running';
+    const wrap = document.getElementById('nav-timer');
+    wrap.style.display = 'flex';
+    wrap.className = 'nav-timer running';
+    document.getElementById('nav-timer-label').textContent = 'Processing';
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(updateTimerDisplay, 500);
+    updateTimerDisplay();
+}
+
+function pauseTimer() {
+    if (timerState !== 'running') return;
+    timerAccumulated += Date.now() - timerStarted;
+    timerState = 'paused';
+    document.getElementById('nav-timer').className = 'nav-timer paused';
+    document.getElementById('nav-timer-label').textContent = 'Paused';
+    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+    updateTimerDisplay();
+}
+
+function resumeTimer() {
+    if (timerState !== 'paused') return;
+    timerStarted = Date.now();
+    timerState = 'running';
+    document.getElementById('nav-timer').className = 'nav-timer running';
+    document.getElementById('nav-timer-label').textContent = 'Syncing';
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(updateTimerDisplay, 500);
+    updateTimerDisplay();
+}
+
+function stopTimer() {
+    if (timerState === 'idle' || timerState === 'stopped') return;
+    if (timerState === 'running') timerAccumulated += Date.now() - timerStarted;
+    timerState = 'stopped';
+    document.getElementById('nav-timer').className = 'nav-timer stopped';
+    document.getElementById('nav-timer-label').textContent = 'Done';
+    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+    updateTimerDisplay();
+}
+
+// ════════════════════════════════════════════════════════════════════
 //  INTAKE LOGIC (unchanged from original)
 // ════════════════════════════════════════════════════════════════════
 
@@ -1412,6 +1511,7 @@ processBtn.addEventListener('click', async () => {
     if (!matterId || !currentFile) { shake(processBtn); return; }
 
     const cfg = getConfig();
+    startTimer();
     setLoading(true);
     processBtn.disabled = true;
 
@@ -1440,6 +1540,7 @@ processBtn.addEventListener('click', async () => {
 
         reviewPanel.classList.add('visible');
         reviewPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        pauseTimer();
 
     } catch (err) {
         showToast('Error: ' + err.message);
@@ -1540,6 +1641,7 @@ document.getElementById('approveBtn').addEventListener('click', async () => {
     const token = getStoredToken();
     if (token) finalData._clioToken = token;
 
+    resumeTimer();
     const approveBtn = document.getElementById('approveBtn');
     approveBtn.disabled = true;
     approveBtn.textContent = '⏳  Syncing…';
@@ -1590,6 +1692,7 @@ function startPolling(matterId) {
                 document.getElementById('success-email').textContent = data.email || 'the client';
                 document.getElementById('success-polling').style.display = 'none';
                 document.getElementById('success-content').style.display = 'block';
+                stopTimer();
             }
         } catch(e) { /* keep polling */ }
     }, 3000);
@@ -1599,6 +1702,7 @@ function startPolling(matterId) {
             document.getElementById('success-polling').style.display = 'none';
             document.getElementById('success-content').style.display = 'block';
             document.getElementById('success-email').textContent = 'the client';
+            stopTimer();
         }
     }, 120000);
 }
